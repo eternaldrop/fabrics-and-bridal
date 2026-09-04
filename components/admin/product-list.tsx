@@ -34,7 +34,7 @@ export function ProductList({ items }: { items: AdminProductRow[] }) {
   return (
     <div className="divide-y divide-taupe/20 border-t border-b border-taupe/20">
       {items.map((item) => (
-        <div key={item.id} className="flex items-center gap-4 py-4">
+        <div key={item.id} className="flex flex-wrap items-center gap-x-4 gap-y-2 py-4">
           <div className="relative w-14 h-16 bg-taupe/10 border border-taupe/20 shrink-0">
             {item.coverImagePublicId && (
               <Image
@@ -46,15 +46,15 @@ export function ProductList({ items }: { items: AdminProductRow[] }) {
               />
             )}
           </div>
-          <div className="flex-1 min-w-0">
+          <div className="flex-1 min-w-[140px]">
             <p className="font-serif">{item.name}</p>
             <p className="text-xs text-taupe">
               {item.type === "fabric" ? "Fabric" : "Outfit"}
               {item.category ? ` · ${item.category}` : ""}
             </p>
           </div>
-          <p className="text-sm w-24 text-right">{formatPrice(item.price)}</p>
-          <p className="text-sm w-32 text-right text-taupe">
+          <p className="text-sm sm:w-24 sm:text-right">{formatPrice(item.price)}</p>
+          <p className="text-sm sm:w-32 sm:text-right text-taupe">
             {item.stockQuantity != null ? `${item.stockQuantity} in stock` : "Made to order"}
           </p>
           <button

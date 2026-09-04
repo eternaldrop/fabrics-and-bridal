@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { auth } from "@/lib/auth";
 import { Container } from "@/components/ui/container";
+import { CartLink } from "@/components/layout/cart-link";
+import { MobileNav } from "@/components/layout/mobile-nav";
 
 const navLinks = [
   { href: "/catalog/fabrics", label: "Fabrics" },
@@ -13,11 +15,14 @@ export async function Header() {
   const session = await auth();
 
   return (
-    <header className="border-b border-taupe/30">
+    <header className="relative border-b border-taupe/30">
       <Container className="flex items-center justify-between py-5">
-        <Link href="/" className="font-serif text-xl text-ink">
-          Fabrics &amp; Bridals
-        </Link>
+        <div className="flex items-center gap-4">
+          <MobileNav isLoggedIn={!!session?.user} />
+          <Link href="/" className="font-serif text-xl text-ink">
+            Fabrics &amp; Bridals
+          </Link>
+        </div>
 
         <nav className="hidden md:flex items-center gap-8">
           {navLinks.map((link) => (
@@ -33,17 +38,15 @@ export async function Header() {
 
         <div className="flex items-center gap-6">
           {session?.user ? (
-            <Link href="/account/orders" className="text-sm text-ink hover:text-blush">
+            <Link href="/account/orders" className="hidden md:block text-sm text-ink hover:text-blush">
               My Account
             </Link>
           ) : (
-            <Link href="/login" className="text-sm text-ink hover:text-blush">
+            <Link href="/login" className="hidden md:block text-sm text-ink hover:text-blush">
               Login
             </Link>
           )}
-          <Link href="/cart" className="text-sm text-ink hover:text-blush">
-            Cart
-          </Link>
+          <CartLink />
         </div>
       </Container>
     </header>

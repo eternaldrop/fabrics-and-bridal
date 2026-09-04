@@ -26,8 +26,8 @@ export function MoodBoardDetail({ board }: { board: MoodBoardData }) {
           {board.images.map((img, i) => (
             <div
               key={img.cloudinaryPublicId + i}
-              className={`relative aspect-[4/5] border border-taupe/20 overflow-hidden ${
-                i === 0 ? "col-span-2 aspect-[16/10]" : ""
+              className={`relative border border-taupe/20 overflow-hidden ${
+                i === 0 ? "col-span-2 aspect-[16/10]" : "aspect-[4/5]"
               }`}
             >
               <Image

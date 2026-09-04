@@ -21,8 +21,8 @@ export function MoodBoardCard({
       className={`group text-left block ${span === "wide" ? "md:col-span-2" : ""}`}
     >
       <div
-        className={`relative w-full border border-taupe/20 overflow-hidden ${
-          span === "wide" ? "aspect-[16/9]" : "aspect-[4/5]"
+        className={`relative w-full border border-taupe/20 overflow-hidden aspect-[4/5] ${
+          span === "wide" ? "md:aspect-[16/9]" : ""
         }`}
       >
         {cover ? (

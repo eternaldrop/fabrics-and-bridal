@@ -115,7 +115,7 @@ export function ProductForm() {
         <Textarea id="description" name="description" rows={3} />
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <Label htmlFor="category">Category</Label>
           {type === "fabric" ? (
@@ -140,7 +140,7 @@ export function ProductForm() {
       </div>
 
       {type === "fabric" ? (
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <Label htmlFor="material">Material</Label>
             <Select id="material" name="material" defaultValue="" required>
@@ -160,7 +160,7 @@ export function ProductForm() {
           </div>
         </div>
       ) : (
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <Label htmlFor="sizes">Sizes (comma-separated)</Label>
             <Input id="sizes" name="sizes" placeholder="S, M, L, XL" />
@@ -172,7 +172,7 @@ export function ProductForm() {
         </div>
       )}
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <Label htmlFor="occasion">Occasion</Label>
           <Input id="occasion" name="occasion" placeholder="Wedding, everyday, party..." />

@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { getProductBySlug } from "@/lib/products";
 import { Container } from "@/components/ui/container";
 import { ProductGallery } from "@/components/catalog/product-gallery";
+import { AddToCartButton } from "@/components/catalog/add-to-cart-button";
 import { Button } from "@/components/ui/button";
 import { formatPrice } from "@/lib/format";
 
@@ -51,13 +52,23 @@ export default async function OutfitDetailPage({
           )}
 
           <div className="mt-10 flex flex-wrap gap-4">
-            <Button variant="primary">Add to cart</Button>
+            <AddToCartButton
+              product={{
+                productId: product.id,
+                slug: product.slug,
+                name: product.name,
+                price: product.price,
+                type: "outfit",
+                coverImagePublicId: images[0]?.cloudinaryPublicId,
+              }}
+            />
             {product.isCustomOrderable && (
               <Button variant="secondary">Request custom order</Button>
             )}
           </div>
           <p className="text-xs text-taupe mt-3">
-            Checkout isn&apos;t connected yet — cart and payment arrive in Phase 2.
+            Checkout and payment arrive in Phase 2 — items you add are saved
+            in your cart for now.
           </p>
         </div>
       </div>
