@@ -19,27 +19,30 @@ export default function PaymentDeliveryPage() {
       <section className="mb-10">
         <h2 className="font-serif text-2xl mb-3">Delivery</h2>
         <p className="text-ink/80 mb-3">
-          Ready-made items ship within [X] business days of payment.
-          Custom and made-to-measure orders ship once production is
-          complete — you can track progress from your account at any time.
+          Ready-made items ship within 3–5 business days of payment.
+          Custom and made-to-measure orders typically take 2–4 weeks to
+          complete, depending on the piece — you can track progress from
+          your account at any time.
         </p>
         <p className="text-ink/80">
-          Pickup is available at our studio for local customers. Choose
-          your preferred delivery method at checkout.
+          Pickup is available at our studio in Victoria Island, Lagos for
+          local customers. Choose your preferred delivery method at
+          checkout.
         </p>
       </section>
 
       <section>
         <h2 className="font-serif text-2xl mb-3">Shipping fees</h2>
         <p className="text-ink/80">
-          Shipping fees are calculated at checkout based on your delivery
-          address.
+          ₦2,000 flat rate within Lagos, ₦3,500–₦6,000 to other states
+          depending on location, calculated at checkout. Pickup is free.
         </p>
       </section>
 
       <p className="text-xs text-taupe mt-10">
-        This page has placeholder timelines and fees — fill in your actual
-        shipping partners, timelines, and rates before launch.
+        The timelines and fees above are dummy placeholder values — swap
+        in your actual shipping partner, timelines, and rates before
+        launch.
       </p>
     </Container>
   );

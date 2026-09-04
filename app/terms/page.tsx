@@ -6,7 +6,7 @@ export default function TermsPage() {
   return (
     <Container className="py-16 max-w-2xl">
       <h1 className="font-serif text-4xl mb-2">Terms &amp; conditions</h1>
-      <p className="text-taupe text-sm mb-10">Last updated: [date]</p>
+      <p className="text-taupe text-sm mb-10">Last updated: September 4, 2026</p>
 
       <div className="space-y-8 text-ink/80 text-sm leading-relaxed">
         <section>
@@ -20,7 +20,7 @@ export default function TermsPage() {
         <section>
           <h2 className="font-serif text-xl text-ink mb-2">2. Orders and pricing</h2>
           <p>
-            Prices are shown in [currency] and may change without notice.
+            Prices are shown in Nigerian Naira (₦) and may change without notice.
             An order is confirmed once payment is received. We reserve the
             right to cancel and refund an order we cannot fulfill.
           </p>
@@ -66,7 +66,7 @@ export default function TermsPage() {
 
         <section>
           <h2 className="font-serif text-xl text-ink mb-2">7. Governing law</h2>
-          <p>These terms are governed by the laws of [jurisdiction].</p>
+          <p>These terms are governed by the laws of the Federal Republic of Nigeria.</p>
         </section>
 
         <section>
@@ -82,9 +82,11 @@ export default function TermsPage() {
       </div>
 
       <p className="text-xs text-taupe mt-10 border-t border-taupe/30 pt-6">
-        This is placeholder legal content, not legal advice — have a
-        lawyer review and adapt it (currency, jurisdiction, return policy,
-        etc.) to your business before launch.
+        This is placeholder legal content, not legal advice — the date,
+        currency, and jurisdiction above are dummy values (assumed
+        Nigeria, based on the Paystack integration). Have a lawyer review
+        and confirm everything, including the return policy, before
+        launch.
       </p>
     </Container>
   );

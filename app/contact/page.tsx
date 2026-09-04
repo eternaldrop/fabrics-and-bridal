@@ -22,7 +22,11 @@ export default function ContactPage() {
         </div>
         <div>
           <dt className="text-taupe mb-1">Phone / WhatsApp</dt>
-          <dd>+234 000 000 0000</dd>
+          <dd>+234 801 234 5678</dd>
+        </div>
+        <div>
+          <dt className="text-taupe mb-1">Studio address</dt>
+          <dd>14 Adeola Odeku Street, Victoria Island, Lagos, Nigeria</dd>
         </div>
         <div>
           <dt className="text-taupe mb-1">Studio hours</dt>
@@ -31,8 +35,8 @@ export default function ContactPage() {
       </dl>
 
       <p className="text-xs text-taupe mt-10">
-        Contact details above are placeholders — replace with your real
-        business email, phone number, and hours.
+        Contact details above are dummy placeholders — replace with your
+        real business email, phone number, address, and hours.
       </p>
     </Container>
   );

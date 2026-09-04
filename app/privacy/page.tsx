@@ -6,7 +6,7 @@ export default function PrivacyPage() {
   return (
     <Container className="py-16 max-w-2xl">
       <h1 className="font-serif text-4xl mb-2">Privacy policy</h1>
-      <p className="text-taupe text-sm mb-10">Last updated: [date]</p>
+      <p className="text-taupe text-sm mb-10">Last updated: September 4, 2026</p>
 
       <div className="space-y-8 text-ink/80 text-sm leading-relaxed">
         <section>

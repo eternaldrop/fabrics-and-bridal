@@ -24,19 +24,13 @@ export default function AboutPage() {
       </div>
 
       <h2 className="font-serif text-2xl mt-12 mb-4">Get in touch</h2>
-      <dl className="space-y-2 text-sm">
-        <div className="flex gap-3">
-          <dt className="text-taupe w-20">Email</dt>
-          <dd>
-            <a href="mailto:hello@fabricsandbridals.com" className="underline decoration-taupe underline-offset-4 hover:text-blush">
-              hello@fabricsandbridals.com
-            </a>
-          </dd>
-        </div>
-      </dl>
-      <p className="text-xs text-taupe mt-8">
-        Contact details above are placeholders — replace with your real
-        business email/phone when ready.
+      <p className="text-ink/80">
+        Have a question about an order, a fabric, or your bridal
+        consultation?{" "}
+        <a href="/contact" className="underline decoration-taupe underline-offset-4 hover:text-blush">
+          Visit our contact page
+        </a>
+        .
       </p>
     </Container>
   );
