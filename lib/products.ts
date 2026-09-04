@@ -1,4 +1,4 @@
-import { and, asc, count, eq, gte, lte, or, ilike, SQL } from "drizzle-orm";
+import { and, asc, count, desc, eq, gte, lte, or, ilike, SQL } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { products, productImages, productVariants } from "@/db/schema";
 
@@ -79,6 +79,32 @@ export async function getProductBySlug(slug: string) {
     .where(eq(productVariants.productId, product.id));
 
   return { product, images, variants };
+}
+
+// Homepage curation shelves. Luxury and Bridal are real, computed
+// signals (price, category). Popular has no real signal yet — there's no
+// order/view tracking until Phase 2 ordering exists — so it's approximated
+// by name order for now; swap for an order-count query once that data
+// exists.
+export async function getNewArrivals(type: "fabric" | "outfit", limit = 5) {
+  return db.select().from(products).where(eq(products.type, type)).orderBy(desc(products.createdAt)).limit(limit);
+}
+
+export async function getLuxuryFabrics(limit = 5) {
+  return db.select().from(products).where(eq(products.type, "fabric")).orderBy(desc(products.price)).limit(limit);
+}
+
+export async function getBridalFabrics(limit = 5) {
+  return db
+    .select()
+    .from(products)
+    .where(and(eq(products.type, "fabric"), eq(products.category, "Bridal Fabrics")))
+    .orderBy(asc(products.name))
+    .limit(limit);
+}
+
+export async function getPopularFabrics(limit = 5) {
+  return db.select().from(products).where(eq(products.type, "fabric")).orderBy(asc(products.name)).limit(limit);
 }
 
 export async function getDistinctValues(type: "fabric" | "outfit") {

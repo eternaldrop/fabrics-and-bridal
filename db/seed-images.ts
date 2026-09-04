@@ -22,39 +22,44 @@ import sharp from "sharp";
 import { cloudinary } from "@/lib/cloudinary";
 import { db } from "@/lib/db";
 import { products, productImages } from "@/db/schema";
+import { FABRIC_CATEGORIES, FABRIC_MATERIALS } from "@/lib/taxonomy";
 
 interface FabricSpec {
   name: string;
   searchQueries: string[];
-  category: string;
-  material: string;
+  category: (typeof FABRIC_CATEGORIES)[number];
+  material: (typeof FABRIC_MATERIALS)[number];
+  // The specific fabric type (e.g. "Chantilly lace"), folded into the
+  // description since `material` above is the fixed fiber-content filter.
+  fabricType: string;
   color: string;
   occasion: string;
   price: number;
 }
 
-// 10 general fabrics + 8 under the "bridal" category — 18 total, enough to
-// span two pages at the 15-per-page catalog page size. Each has a couple
-// of fallback search queries in case the first turns up nothing usable.
+// 10 general fabrics + 8 under the "Bridal Fabrics" category — 18 total,
+// enough to span two pages at the 15-per-page catalog page size. Each has
+// a couple of fallback search queries in case the first turns up nothing
+// usable.
 const fabrics: FabricSpec[] = [
-  { name: "Ankara Wax Print", searchQueries: ["ankara wax print fabric", "african wax print fabric", "ankara cloth"], category: "aso-ebi", material: "Ankara / wax print cotton", color: "Multicolor", occasion: "party", price: 8500 },
-  { name: "Silk Charmeuse", searchQueries: ["red silk fabric texture", "silk fabric"], category: "occasion wear", material: "Silk charmeuse", color: "Red", occasion: "evening", price: 15000 },
-  { name: "Aso-Oke Woven Cloth", searchQueries: ["aso oke woven fabric", "aso oke nigeria", "handwoven cloth nigeria", "woven textile africa"], category: "aso-ebi", material: "Aso-oke", color: "Gold", occasion: "wedding guest", price: 22000 },
-  { name: "Cotton Chambray", searchQueries: ["blue cotton chambray fabric", "cotton fabric texture"], category: "casual", material: "Cotton chambray", color: "Blue", occasion: "everyday", price: 4500 },
-  { name: "Pastel Chiffon", searchQueries: ["pastel chiffon fabric", "chiffon fabric texture"], category: "occasion wear", material: "Chiffon", color: "Pastel pink", occasion: "party", price: 6500 },
-  { name: "Natural Linen", searchQueries: ["natural linen fabric texture", "linen fabric"], category: "casual", material: "Linen", color: "Natural", occasion: "everyday", price: 5200 },
-  { name: "Emerald Velvet", searchQueries: ["green velvet fabric texture", "velvet fabric"], category: "occasion wear", material: "Velvet", color: "Emerald", occasion: "evening", price: 18000 },
-  { name: "Indigo Denim", searchQueries: ["blue denim fabric texture", "denim fabric close up"], category: "casual", material: "Denim", color: "Indigo", occasion: "everyday", price: 4000 },
-  { name: "Gold Brocade", searchQueries: ["gold brocade fabric texture", "brocade fabric"], category: "aso-ebi", material: "Brocade", color: "Gold", occasion: "wedding guest", price: 19500 },
-  { name: "Kente Cloth", searchQueries: ["kente cloth fabric", "kente cloth ghana"], category: "aso-ebi", material: "Kente", color: "Multicolor", occasion: "party", price: 24000 },
-  { name: "Ivory Chantilly Lace", searchQueries: ["ivory lace fabric", "white lace fabric texture"], category: "bridal", material: "Chantilly lace", color: "Ivory", occasion: "wedding", price: 28000 },
-  { name: "Blush Tulle", searchQueries: ["pink tulle fabric", "tulle fabric texture"], category: "bridal", material: "Tulle", color: "Blush", occasion: "wedding", price: 9000 },
-  { name: "Champagne Silk Satin", searchQueries: ["champagne silk satin fabric", "satin fabric gold"], category: "bridal", material: "Silk satin", color: "Champagne", occasion: "wedding", price: 26000 },
-  { name: "White Duchess Satin", searchQueries: ["white satin fabric texture", "satin fabric"], category: "bridal", material: "Duchess satin", color: "White", occasion: "wedding", price: 27000 },
-  { name: "Beaded Bridal Lace", searchQueries: ["beaded lace fabric bridal", "beaded lace fabric", "embellished lace fabric"], category: "bridal", material: "Beaded lace", color: "Ivory", occasion: "wedding", price: 35000 },
-  { name: "White Organza", searchQueries: ["white organza fabric", "organza fabric texture"], category: "bridal", material: "Organza", color: "White", occasion: "wedding", price: 12000 },
-  { name: "Chantilly Lace Detail", searchQueries: ["chantilly lace fabric close up", "lace fabric detail"], category: "bridal", material: "Chantilly lace", color: "White", occasion: "wedding", price: 30000 },
-  { name: "Ivory Silk Chiffon", searchQueries: ["ivory chiffon fabric texture", "cream chiffon fabric"], category: "bridal", material: "Silk chiffon", color: "Ivory", occasion: "wedding", price: 20000 },
+  { name: "Ankara Wax Print", searchQueries: ["ankara wax print fabric", "african wax print fabric", "ankara cloth"], category: "Casual Fabrics", material: "Cotton", fabricType: "Ankara / wax print cotton", color: "Multicolor", occasion: "party", price: 8500 },
+  { name: "Silk Charmeuse", searchQueries: ["red silk fabric texture", "silk fabric"], category: "Business Fabrics", material: "Silk", fabricType: "Silk charmeuse", color: "Red", occasion: "evening", price: 15000 },
+  { name: "Aso-Oke Woven Cloth", searchQueries: ["aso oke woven fabric", "aso oke nigeria", "handwoven cloth nigeria", "woven textile africa"], category: "Business Fabrics", material: "Cotton Blend", fabricType: "Aso-oke", color: "Gold", occasion: "wedding guest", price: 22000 },
+  { name: "Cotton Chambray", searchQueries: ["blue cotton chambray fabric", "cotton fabric texture"], category: "Casual Fabrics", material: "Cotton", fabricType: "Cotton chambray", color: "Blue", occasion: "everyday", price: 4500 },
+  { name: "Pastel Chiffon", searchQueries: ["pastel chiffon fabric", "chiffon fabric texture"], category: "Casual Fabrics", material: "Silk Blend", fabricType: "Chiffon", color: "Pastel pink", occasion: "party", price: 6500 },
+  { name: "Natural Linen", searchQueries: ["natural linen fabric texture", "linen fabric"], category: "Casual Fabrics", material: "Linen", fabricType: "Linen", color: "Natural", occasion: "everyday", price: 5200 },
+  { name: "Emerald Velvet", searchQueries: ["green velvet fabric texture", "velvet fabric"], category: "Business Fabrics", material: "Other", fabricType: "Velvet", color: "Emerald", occasion: "evening", price: 18000 },
+  { name: "Indigo Denim", searchQueries: ["blue denim fabric texture", "denim fabric close up"], category: "Casual Fabrics", material: "Cotton", fabricType: "Denim", color: "Indigo", occasion: "everyday", price: 4000 },
+  { name: "Gold Brocade", searchQueries: ["gold brocade fabric texture", "brocade fabric"], category: "Business Fabrics", material: "Silk Blend", fabricType: "Brocade", color: "Gold", occasion: "wedding guest", price: 19500 },
+  { name: "Kente Cloth", searchQueries: ["kente cloth fabric", "kente cloth ghana"], category: "Business Fabrics", material: "Cotton Blend", fabricType: "Kente", color: "Multicolor", occasion: "party", price: 24000 },
+  { name: "Ivory Chantilly Lace", searchQueries: ["ivory lace fabric", "white lace fabric texture"], category: "Lace Fabrics", material: "Other", fabricType: "Chantilly lace", color: "Ivory", occasion: "wedding", price: 28000 },
+  { name: "Blush Tulle", searchQueries: ["pink tulle fabric", "tulle fabric texture"], category: "Bridal Fabrics", material: "Other", fabricType: "Tulle", color: "Blush", occasion: "wedding", price: 9000 },
+  { name: "Champagne Silk Satin", searchQueries: ["champagne silk satin fabric", "satin fabric gold"], category: "Bridal Fabrics", material: "Silk", fabricType: "Silk satin", color: "Champagne", occasion: "wedding", price: 26000 },
+  { name: "White Duchess Satin", searchQueries: ["white satin fabric texture", "satin fabric"], category: "Bridal Fabrics", material: "Silk Blend", fabricType: "Duchess satin", color: "White", occasion: "wedding", price: 27000 },
+  { name: "Beaded Bridal Lace", searchQueries: ["beaded lace fabric bridal", "beaded lace fabric", "embellished lace fabric"], category: "Lace Fabrics", material: "Other", fabricType: "Beaded lace", color: "Ivory", occasion: "wedding", price: 35000 },
+  { name: "White Organza", searchQueries: ["white organza fabric", "organza fabric texture"], category: "Bridal Fabrics", material: "Silk Blend", fabricType: "Organza", color: "White", occasion: "wedding", price: 12000 },
+  { name: "Chantilly Lace Detail", searchQueries: ["chantilly lace fabric close up", "lace fabric detail"], category: "Lace Fabrics", material: "Other", fabricType: "Chantilly lace", color: "White", occasion: "wedding", price: 30000 },
+  { name: "Ivory Silk Chiffon", searchQueries: ["ivory chiffon fabric texture", "cream chiffon fabric"], category: "Bridal Fabrics", material: "Silk", fabricType: "Silk chiffon", color: "Ivory", occasion: "wedding", price: 20000 },
 ];
 
 interface OpenverseResult {
@@ -97,6 +102,10 @@ function attributionText(result: OpenverseResult) {
   const license = result.license.toUpperCase();
   const version = result.license_version ? ` ${result.license_version}` : "";
   return `Photo by ${creator} (${result.provider}), licensed CC ${license}${version}. Source: ${result.foreign_landing_url}`;
+}
+
+function buildDescription(fabric: FabricSpec, result: OpenverseResult) {
+  return `Fabric type: ${fabric.fabricType}. ${attributionText(result)}`;
 }
 
 async function main() {
@@ -146,15 +155,15 @@ async function main() {
           type: "fabric",
           name: fabric.name,
           slug,
-          description: attributionText(result),
+          description: buildDescription(fabric, result),
           category: fabric.category,
           material: fabric.material,
           color: fabric.color,
           occasion: fabric.occasion,
           price: String(fabric.price),
-          isCustomOrderable: fabric.category === "bridal",
-          stockQuantity: fabric.category === "bridal" ? null : 20,
-          tags: [fabric.category, fabric.material, fabric.color].map((s) => s.toLowerCase()),
+          isCustomOrderable: fabric.category === "Bridal Fabrics",
+          stockQuantity: fabric.category === "Bridal Fabrics" ? null : 20,
+          tags: [fabric.category, fabric.material, fabric.fabricType, fabric.color].map((s) => s.toLowerCase()),
         })
         .returning();
 

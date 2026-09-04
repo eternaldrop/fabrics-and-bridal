@@ -4,9 +4,10 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { CldUploadWidget } from "next-cloudinary";
 import Image from "next/image";
-import { Label, Input, Textarea } from "@/components/ui/input";
+import { Label, Input, Textarea, Select } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { cloudinaryUrl } from "@/lib/cloudinary-url";
+import { FABRIC_CATEGORIES, FABRIC_MATERIALS } from "@/lib/taxonomy";
 
 type ProductType = "fabric" | "outfit";
 
@@ -116,10 +117,21 @@ export function ProductForm() {
 
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <Label htmlFor="category">
-            Category <span className="text-taupe">(e.g. bridal, aso-ebi, casual)</span>
-          </Label>
-          <Input id="category" name="category" />
+          <Label htmlFor="category">Category</Label>
+          {type === "fabric" ? (
+            <Select id="category" name="category" defaultValue="" required>
+              <option value="" disabled>
+                Choose a category
+              </option>
+              {FABRIC_CATEGORIES.map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
+              ))}
+            </Select>
+          ) : (
+            <Input id="category" name="category" placeholder="e.g. bridal, aso-ebi, casual" />
+          )}
         </div>
         <div>
           <Label htmlFor="color">Color</Label>
@@ -130,8 +142,17 @@ export function ProductForm() {
       {type === "fabric" ? (
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <Label htmlFor="material">Material type</Label>
-            <Input id="material" name="material" placeholder="Lace, silk, ankara..." />
+            <Label htmlFor="material">Material</Label>
+            <Select id="material" name="material" defaultValue="" required>
+              <option value="" disabled>
+                Choose a material
+              </option>
+              {FABRIC_MATERIALS.map((m) => (
+                <option key={m} value={m}>
+                  {m}
+                </option>
+              ))}
+            </Select>
           </div>
           <div>
             <Label htmlFor="price">Price per yard</Label>

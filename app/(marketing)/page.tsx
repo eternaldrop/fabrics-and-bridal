@@ -1,32 +1,39 @@
-import Link from "next/link";
 import Image from "next/image";
 import { LinkButton } from "@/components/ui/button";
 import { Container } from "@/components/ui/container";
-import { ProductCard } from "@/components/catalog/product-card";
-import { getProducts } from "@/lib/products";
+import { ProductShelf } from "@/components/catalog/product-shelf";
+import { getPopularFabrics, getNewArrivals, getLuxuryFabrics, getBridalFabrics } from "@/lib/products";
 import { db } from "@/lib/db";
 import { productImages } from "@/db/schema";
 import { asc, inArray } from "drizzle-orm";
 import { cloudinaryUrl } from "@/lib/cloudinary-url";
+import Link from "next/link";
 
 const HERO_IMAGE_ID = "fabrics-and-bridals/site/hero";
 const MOODBOARD_IMAGE_ID = "fabrics-and-bridals/site/moodboard-preview";
 
 export default async function HomePage() {
-  const { items: latestFabrics } = await getProducts({ type: "fabric", page: 1 });
-  const featured = latestFabrics.slice(0, 5);
+  const [popular, newArrivals, luxury, bridal] = await Promise.all([
+    getPopularFabrics(),
+    getNewArrivals("fabric"),
+    getLuxuryFabrics(),
+    getBridalFabrics(),
+  ]);
 
+  const allIds = [...popular, ...newArrivals, ...luxury, ...bridal].map((p) => p.id);
   const coverByProduct = new Map<string, string>();
-  if (featured.length > 0) {
+  if (allIds.length > 0) {
     const images = await db
       .select()
       .from(productImages)
-      .where(inArray(productImages.productId, featured.map((p) => p.id)))
+      .where(inArray(productImages.productId, Array.from(new Set(allIds))))
       .orderBy(asc(productImages.position));
     for (const img of images) {
       if (!coverByProduct.has(img.productId)) coverByProduct.set(img.productId, img.cloudinaryPublicId);
     }
   }
+
+  const catalogIsEmpty = popular.length === 0 && newArrivals.length === 0;
 
   return (
     <div>
@@ -64,21 +71,13 @@ export default async function HomePage() {
         </p>
       </section>
 
-      {/* Latest arrivals — asymmetric, left-aligned; no uniform card grid. */}
-      <section className="py-20">
-        <Container>
-          <div className="flex items-baseline justify-between mb-8">
-            <h2 className="font-serif text-2xl md:text-3xl">Latest arrivals</h2>
-            <Link href="/catalog/fabrics" className="text-sm text-taupe hover:text-ink">
-              View all fabrics
-            </Link>
-          </div>
-
-          {featured.length === 0 ? (
+      <Container>
+        {catalogIsEmpty ? (
+          <div className="py-20">
             <div className="border border-dashed border-taupe/40 rounded-brand p-10 text-center">
               <p className="text-taupe">
-                Your catalog is empty right now. Once fabrics and outfits are
-                added from the admin dashboard, they&apos;ll appear here.
+                Your catalog is empty right now. Once fabrics are added
+                from the admin dashboard, they&apos;ll appear here.
               </p>
               <Link
                 href="/admin/products"
@@ -87,29 +86,24 @@ export default async function HomePage() {
                 Go to admin upload tool
               </Link>
             </div>
-          ) : (
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-10">
-              {featured.map((item, i) => (
-                <ProductCard
-                  key={item.id}
-                  product={{
-                    slug: item.slug,
-                    name: item.name,
-                    price: item.price,
-                    category: item.category,
-                    type: "fabric",
-                    coverImagePublicId: coverByProduct.get(item.id),
-                  }}
-                  span={i === 0 ? "wide" : "normal"}
-                />
-              ))}
-            </div>
-          )}
-        </Container>
-      </section>
+          </div>
+        ) : (
+          <div className="pt-14">
+            <ProductShelf title="Popular Fabrics" viewAllHref="/catalog/fabrics" products={popular} coverByProduct={coverByProduct} />
+            <ProductShelf title="New Arrivals" viewAllHref="/catalog/fabrics" products={newArrivals} coverByProduct={coverByProduct} />
+            <ProductShelf title="Luxury Fabrics" viewAllHref="/catalog/fabrics" products={luxury} coverByProduct={coverByProduct} />
+            <ProductShelf
+              title="Bridal Fabrics"
+              viewAllHref="/catalog/fabrics?category=Bridal+Fabrics"
+              products={bridal}
+              coverByProduct={coverByProduct}
+            />
+          </div>
+        )}
+      </Container>
 
-      {/* Bridal teaser */}
-      <section className="py-20 border-t border-taupe/30">
+      {/* Bridal consultation teaser */}
+      <section className="py-20 border-t border-taupe/30 mt-6">
         <Container className="grid md:grid-cols-2 gap-10 items-center">
           <div>
             <h2 className="font-serif text-2xl md:text-3xl mb-4">

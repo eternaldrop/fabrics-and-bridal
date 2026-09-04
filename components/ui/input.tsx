@@ -1,4 +1,4 @@
-import { InputHTMLAttributes, LabelHTMLAttributes, TextareaHTMLAttributes, forwardRef } from "react";
+import { InputHTMLAttributes, LabelHTMLAttributes, SelectHTMLAttributes, TextareaHTMLAttributes, forwardRef } from "react";
 
 export const Label = ({ className = "", ...props }: LabelHTMLAttributes<HTMLLabelElement>) => (
   <label
@@ -28,3 +28,14 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaHTMLAttributes<H
   )
 );
 Textarea.displayName = "Textarea";
+
+export const Select = forwardRef<HTMLSelectElement, SelectHTMLAttributes<HTMLSelectElement>>(
+  ({ className = "", ...props }, ref) => (
+    <select
+      ref={ref}
+      className={`w-full bg-cream border border-taupe/50 rounded-brand px-4 py-3 text-ink focus:outline-none focus:border-ink transition-colors ${className}`}
+      {...props}
+    />
+  )
+);
+Select.displayName = "Select";

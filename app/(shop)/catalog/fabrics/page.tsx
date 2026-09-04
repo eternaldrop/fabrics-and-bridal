@@ -1,4 +1,5 @@
 import { getProducts, getDistinctValues } from "@/lib/products";
+import { FABRIC_CATEGORIES, FABRIC_MATERIALS } from "@/lib/taxonomy";
 import { productImages } from "@/db/schema";
 import { db } from "@/lib/db";
 import { asc } from "drizzle-orm";
@@ -57,9 +58,9 @@ export default async function FabricsPage({
         basePath="/catalog/fabrics"
         searchParams={params}
         filters={{
-          category: distinct.categories.map((c) => ({ label: c, value: c })),
+          category: FABRIC_CATEGORIES.map((c) => ({ label: c, value: c })),
           color: distinct.colors.map((c) => ({ label: c, value: c })),
-          material: distinct.materials.map((m) => ({ label: m, value: m })),
+          material: FABRIC_MATERIALS.map((m) => ({ label: m, value: m })),
           occasion: distinct.occasions.map((o) => ({ label: o, value: o })),
         }}
       />
