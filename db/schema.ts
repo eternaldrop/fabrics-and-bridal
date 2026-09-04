@@ -153,12 +153,16 @@ export const bridalConsultations = pgTable("bridal_consultations", {
 
 export const moodBoards = pgTable("mood_boards", {
   id: uuid("id").primaryKey().defaultRandom(),
-  consultationId: uuid("consultation_id")
-    .notNull()
-    .references(() => bridalConsultations.id),
+  // Nullable so sample/demo boards (isSample: true) — shown on the public
+  // /bridal page to inspire brides before they book — don't need a real
+  // consultation behind them. Every real, client-linked board still has one.
+  consultationId: uuid("consultation_id").references(() => bridalConsultations.id),
   title: text("title").notNull(),
+  // One-line mood/style descriptor, e.g. "Soft, romantic, garden-inspired".
+  styleDescriptor: text("style_descriptor"),
   colorPalette: jsonb("color_palette").$type<{ hex: string; label: string }[]>(),
   status: moodBoardStatusEnum("status").notNull().default("draft"),
+  isSample: boolean("is_sample").notNull().default(false),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 

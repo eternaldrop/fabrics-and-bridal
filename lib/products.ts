@@ -107,6 +107,30 @@ export async function getPopularFabrics(limit = 5) {
   return db.select().from(products).where(eq(products.type, "fabric")).orderBy(asc(products.name)).limit(limit);
 }
 
+// For the /bridal page's catalogue section: bridal fabrics (real, fixed
+// category) plus wedding-occasion outfits. Outfits have no fixed
+// taxonomy yet and none are seeded, so that half returns empty today —
+// it'll start showing results the moment an admin tags an outfit's
+// occasion as "wedding", no code change needed.
+export async function getBridalCatalogueProducts(limit = 12) {
+  const [fabrics, outfits] = await Promise.all([
+    db
+      .select()
+      .from(products)
+      .where(and(eq(products.type, "fabric"), eq(products.category, "Bridal Fabrics")))
+      .orderBy(asc(products.name))
+      .limit(limit),
+    db
+      .select()
+      .from(products)
+      .where(and(eq(products.type, "outfit"), eq(products.occasion, "wedding")))
+      .orderBy(asc(products.name))
+      .limit(limit),
+  ]);
+
+  return [...fabrics, ...outfits];
+}
+
 export async function getDistinctValues(type: "fabric" | "outfit") {
   const rows = await db
     .select({

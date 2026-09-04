@@ -13,7 +13,8 @@
     "db:seed-images": "node --env-file=.env.local node_modules/tsx/dist/cli.mjs db/seed-images.ts",
     "db:seed-site-images": "node --env-file=.env.local node_modules/tsx/dist/cli.mjs db/seed-site-images.ts",
     "db:seed-carousel-images": "node --env-file=.env.local node_modules/tsx/dist/cli.mjs db/seed-carousel-images.ts",
-    "db:fix-fabric-images": "node --env-file=.env.local node_modules/tsx/dist/cli.mjs db/fix-fabric-images.ts"
+    "db:fix-fabric-images": "node --env-file=.env.local node_modules/tsx/dist/cli.mjs db/fix-fabric-images.ts",
+    "db:seed-mood-boards": "node --env-file=.env.local node_modules/tsx/dist/cli.mjs db/seed-mood-boards.ts"
   },
   "dependencies": {
     "@auth/drizzle-adapter": "^1.11.3",
