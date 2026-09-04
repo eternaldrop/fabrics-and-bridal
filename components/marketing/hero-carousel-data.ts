@@ -43,13 +43,9 @@ export const heroCarouselSlides: HeroCarouselSlide[] = [
     title: "Bridal Catalogues",
     subtext: "Curated looks and fabrics for your wedding day, start to finish.",
     images: [
-      { publicId: "fabrics-and-bridals/site/carousel-gown", alt: "Bride in a full-length gown with train" },
-      { publicId: "fabrics-and-bridals/seed-photos/ivory-chantilly-lace", alt: "Ivory Chantilly lace fabric" },
-      { publicId: "fabrics-and-bridals/site/hero", alt: "Wedding dress lace detail" },
-    ],
-    credits: [
-      "\"The Gown\" by CharlotWest, CC BY-SA 2.0",
-      "\"Free Wedding Dress Lace Texture\" by Beverly & Pack, CC BY 2.0",
+      { publicId: "fabrics-and-bridals/bridal-page/hero", alt: "Bride in an embroidered lace gown beside rolls of fabric" },
+      { publicId: "fabrics-and-bridals/bridal-page/bridal-gown", alt: "Bride in a champagne satin gown" },
+      { publicId: "fabrics-and-bridals/bridal-page/lace-detail", alt: "Ivory crochet lace detail" },
     ],
   },
 ];

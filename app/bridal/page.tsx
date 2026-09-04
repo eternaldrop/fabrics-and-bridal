@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { asc, inArray } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { productImages } from "@/db/schema";
@@ -7,8 +8,11 @@ import { LinkButton } from "@/components/ui/button";
 import { Container } from "@/components/ui/container";
 import { ProductShelf } from "@/components/catalog/product-shelf";
 import { MoodBoardShowcase } from "@/components/bridal/mood-board-showcase";
+import { cloudinaryUrl } from "@/lib/cloudinary-url";
 
 export const metadata = { title: "Bridal Consultations — Fabrics & Bridals" };
+
+const HERO_IMAGE_ID = "fabrics-and-bridals/bridal-page/hero";
 
 export default async function BridalLandingPage() {
   const [sampleBoards, catalogueProducts] = await Promise.all([
@@ -32,25 +36,33 @@ export default async function BridalLandingPage() {
     <div>
       {/* 1. Intro / hero */}
       <section className="border-b border-taupe/30 bg-rose/10">
-        <Container className="py-16 md:py-24">
-          <h1 className="font-serif text-4xl md:text-5xl max-w-xl leading-tight">
-            Let&apos;s design your wedding palette.
-          </h1>
-          <p className="mt-4 text-ink/80 max-w-md">
-            Your consultation starts with a conversation about your wedding
-            and style — from that, we build you a personal color mood
-            board: fabric swatches, a palette, and outfit ideas, all in one
-            place. Review it, ask for changes, and once you approve it,
-            order the matching fabrics and outfits directly from the
-            board.
-          </p>
-          <LinkButton href="/register" variant="primary" className="mt-8">
-            Book Your Consultation
-          </LinkButton>
-          <p className="text-xs text-taupe mt-3">
-            Booking form is being finished — create an account now and
-            we&apos;ll notify you the moment it&apos;s ready.
-          </p>
+        <Container className="py-16 md:py-24 grid md:grid-cols-2 gap-10 md:gap-16 items-center">
+          <div>
+            <h1 className="font-serif text-4xl md:text-5xl leading-tight">
+              Let&apos;s design your wedding palette.
+            </h1>
+            <p className="mt-4 text-ink/80 max-w-md">
+              Your consultation starts with a conversation about your wedding
+              and style — from that, we build you a personal color mood
+              board: fabric swatches, a palette, and outfit ideas, all in one
+              place. Review it, ask for changes, and once you approve it,
+              order the matching fabrics and outfits directly from the
+              board.
+            </p>
+            <LinkButton href="/bridal/consultation" variant="primary" className="mt-8">
+              Book Your Consultation
+            </LinkButton>
+          </div>
+          <div className="relative aspect-[4/5] md:aspect-[3/4] border border-taupe/20 overflow-hidden order-first md:order-last">
+            <Image
+              src={cloudinaryUrl(HERO_IMAGE_ID, { width: 1200 })}
+              alt="Bride in an embroidered lace gown beside rolls of fabric"
+              fill
+              priority
+              sizes="(min-width: 768px) 45vw, 100vw"
+              className="object-cover"
+            />
+          </div>
         </Container>
       </section>
 
@@ -93,7 +105,7 @@ export default async function BridalLandingPage() {
           <h2 className="font-serif text-2xl md:text-3xl mb-4">
             Ready to start planning your palette?
           </h2>
-          <LinkButton href="/register" variant="primary">
+          <LinkButton href="/bridal/consultation" variant="primary">
             Book Your Consultation
           </LinkButton>
         </Container>

@@ -31,8 +31,8 @@ const boards: SampleBoard[] = [
     ],
     images: [
       "fabrics-and-bridals/seed-photos/ivory-chantilly-lace",
-      "fabrics-and-bridals/seed-photos/champagne-silk-satin",
-      "fabrics-and-bridals/site/carousel-dahlia",
+      "fabrics-and-bridals/bridal-page/woven-fabric",
+      "fabrics-and-bridals/bridal-page/aso-ebi-look",
       "fabrics-and-bridals/seed-photos/chantilly-lace-detail",
     ],
   },
@@ -81,7 +81,7 @@ const boards: SampleBoard[] = [
       "fabrics-and-bridals/seed-photos/champagne-silk-satin",
       "fabrics-and-bridals/seed-photos/white-duchess-satin",
       "fabrics-and-bridals/seed-photos/beaded-bridal-lace",
-      "fabrics-and-bridals/seed-photos/white-organza",
+      "fabrics-and-bridals/bridal-page/bridal-gown",
     ],
   },
   {
@@ -112,7 +112,7 @@ const boards: SampleBoard[] = [
     images: [
       "fabrics-and-bridals/seed-photos/blush-tulle",
       "fabrics-and-bridals/seed-photos/pastel-chiffon",
-      "fabrics-and-bridals/site/moodboard-preview",
+      "fabrics-and-bridals/bridal-page/lace-detail",
       "fabrics-and-bridals/site/carousel-dahlia",
     ],
   },

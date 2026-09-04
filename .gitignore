@@ -38,6 +38,13 @@ yarn-error.log*
 # vercel
 .vercel
 
+# Local source images (uploaded to Cloudinary by the db/seed-*-images.ts
+# scripts, not tracked here — large binaries, and "images for fabrics/"
+# specifically contains a competitor's watermarked photos that must never
+# enter git history).
+/images for bridal page/
+/images for fabrics/
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
