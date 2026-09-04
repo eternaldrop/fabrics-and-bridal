@@ -4,14 +4,18 @@ import { useState } from "react";
 import Image from "next/image";
 import { cloudinaryUrl } from "@/lib/cloudinary-url";
 
+interface GalleryImage {
+  cloudinaryPublicId: string;
+}
+
 export function ProductGallery({
-  images,
+  images: initialImages,
   productName,
 }: {
-  images: { cloudinaryPublicId: string }[];
+  images: GalleryImage[];
   productName: string;
 }) {
-  const [activeIndex, setActiveIndex] = useState(0);
+  const [images, setImages] = useState(initialImages);
   const [lightboxOpen, setLightboxOpen] = useState(false);
 
   if (images.length === 0) {
@@ -22,45 +26,62 @@ export function ProductGallery({
     );
   }
 
-  const active = images[activeIndex];
+  const main = images[0];
+  // Layout is fixed at main + up to 3 styling shots; extra uploads beyond
+  // that aren't shown here.
+  const thumbnails = images.slice(1, 4);
+
+  // Swap the clicked thumbnail into the main position; the previous main
+  // image takes that thumbnail's old slot.
+  function selectThumbnail(thumbIndex: number) {
+    setImages((prev) => {
+      const next = [...prev];
+      const mainImg = next[0];
+      next[0] = next[thumbIndex + 1];
+      next[thumbIndex + 1] = mainImg;
+      return next;
+    });
+  }
 
   return (
     <div>
-      <button
-        type="button"
-        onClick={() => setLightboxOpen(true)}
-        className="relative w-full aspect-[4/5] bg-taupe/10 border border-taupe/20 overflow-hidden cursor-zoom-in block"
-      >
-        <Image
-          src={cloudinaryUrl(active.cloudinaryPublicId, { width: 1200 })}
-          alt={productName}
-          fill
-          className="object-cover"
-          priority
-        />
-      </button>
+      <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr] gap-3">
+        <button
+          type="button"
+          onClick={() => setLightboxOpen(true)}
+          className="relative w-full aspect-[4/5] bg-taupe/10 border border-taupe/20 overflow-hidden cursor-zoom-in block order-1"
+        >
+          <Image
+            src={cloudinaryUrl(main.cloudinaryPublicId, { width: 1200 })}
+            alt={productName}
+            fill
+            sizes="(min-width: 768px) 60vw, 100vw"
+            className="object-cover"
+            priority
+          />
+        </button>
 
-      {images.length > 1 && (
-        <div className="flex gap-3 mt-4">
-          {images.map((img, i) => (
-            <button
-              key={img.cloudinaryPublicId + i}
-              type="button"
-              onClick={() => setActiveIndex(i)}
-              className={`relative w-20 aspect-[4/5] border overflow-hidden ${
-                i === activeIndex ? "border-ink" : "border-taupe/30"
-              }`}
-            >
-              <Image
-                src={cloudinaryUrl(img.cloudinaryPublicId, { width: 200 })}
-                alt={`${productName} thumbnail ${i + 1}`}
-                fill
-                className="object-cover"
-              />
-            </button>
-          ))}
-        </div>
-      )}
+        {thumbnails.length > 0 && (
+          <div className="grid grid-cols-3 md:grid-cols-1 gap-3 order-2">
+            {thumbnails.map((img, i) => (
+              <button
+                key={img.cloudinaryPublicId}
+                type="button"
+                onClick={() => selectThumbnail(i)}
+                className="group relative w-full aspect-[4/5] border border-taupe/30 overflow-hidden hover:border-rose transition-colors"
+              >
+                <Image
+                  src={cloudinaryUrl(img.cloudinaryPublicId, { width: 400 })}
+                  alt={`${productName} — styled look ${i + 1}`}
+                  fill
+                  sizes="(min-width: 768px) 20vw, 33vw"
+                  className="object-cover transition-transform duration-200 group-hover:scale-105"
+                />
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
 
       {lightboxOpen && (
         <div
@@ -76,9 +97,10 @@ export function ProductGallery({
           </button>
           <div className="relative w-full max-w-3xl aspect-[4/5]">
             <Image
-              src={cloudinaryUrl(active.cloudinaryPublicId, { width: 1600 })}
+              src={cloudinaryUrl(main.cloudinaryPublicId, { width: 1600 })}
               alt={productName}
               fill
+              sizes="(min-width: 768px) 768px, 100vw"
               className="object-contain"
             />
           </div>

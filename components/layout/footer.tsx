@@ -1,5 +1,14 @@
 import Link from "next/link";
 import { Container } from "@/components/ui/container";
+import { InstagramIcon, FacebookIcon, TikTokIcon, WhatsAppIcon } from "@/components/ui/social-icons";
+
+// Placeholder handles — swap for the real accounts when ready.
+const socialLinks = [
+  { href: "https://instagram.com/fabricsandbridals", label: "Instagram", Icon: InstagramIcon },
+  { href: "https://facebook.com/fabricsandbridals", label: "Facebook", Icon: FacebookIcon },
+  { href: "https://tiktok.com/@fabricsandbridals", label: "TikTok", Icon: TikTokIcon },
+  { href: "https://wa.me/2348012345678", label: "WhatsApp", Icon: WhatsAppIcon },
+];
 
 const columns = [
   {
@@ -39,6 +48,20 @@ export function Footer() {
               Fabrics, made-to-measure outfits, and bridal styling
               consultations.
             </p>
+            <div className="flex items-center gap-4 mt-5">
+              {socialLinks.map(({ href, label, Icon }) => (
+                <a
+                  key={label}
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={label}
+                  className="text-taupe hover:text-blush transition-colors"
+                >
+                  <Icon className="w-5 h-5" />
+                </a>
+              ))}
+            </div>
           </div>
 
           {columns.map((col) => (

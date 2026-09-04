@@ -41,6 +41,7 @@ export function ProductList({ items }: { items: AdminProductRow[] }) {
                 src={cloudinaryUrl(item.coverImagePublicId, { width: 120 })}
                 alt={item.name}
                 fill
+                sizes="56px"
                 className="object-cover"
               />
             )}

@@ -234,6 +234,7 @@ export function ProductForm() {
                   src={cloudinaryUrl(publicId, { width: 160 })}
                   alt="Uploaded preview"
                   fill
+                  sizes="80px"
                   className="object-cover"
                 />
               </div>

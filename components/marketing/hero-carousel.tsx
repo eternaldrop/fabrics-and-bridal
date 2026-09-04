@@ -96,6 +96,7 @@ function SlideCollage({ slide, isPriority }: { slide: HeroCarouselSlide; isPrior
           src={cloudinaryUrl(primary.publicId, { width: 2000 })}
           alt={primary.alt}
           fill
+          sizes="100vw"
           priority={isPriority}
           className="object-cover"
         />
@@ -110,6 +111,7 @@ function SlideCollage({ slide, isPriority }: { slide: HeroCarouselSlide; isPrior
             src={cloudinaryUrl(second.publicId, { width: 600 })}
             alt={second.alt}
             fill
+            sizes="24vw"
             className="object-cover"
           />
         </div>
@@ -120,6 +122,7 @@ function SlideCollage({ slide, isPriority }: { slide: HeroCarouselSlide; isPrior
             src={cloudinaryUrl(third.publicId, { width: 500 })}
             alt={third.alt}
             fill
+            sizes="18vw"
             className="object-cover"
           />
         </div>

@@ -112,6 +112,7 @@ export default async function HomePage() {
                 src={cloudinaryUrl(MOODBOARD_IMAGE_ID, { width: 1000 })}
                 alt="Blush peony — an example of a wedding color palette starting point"
                 fill
+                sizes="(min-width: 768px) 40vw, 100vw"
                 className="object-cover"
               />
             </div>
