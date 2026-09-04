@@ -11,7 +11,9 @@
     "db:push": "node --env-file=.env.local node_modules/drizzle-kit/bin.cjs push",
     "db:studio": "node --env-file=.env.local node_modules/drizzle-kit/bin.cjs studio",
     "db:seed-images": "node --env-file=.env.local node_modules/tsx/dist/cli.mjs db/seed-images.ts",
-    "db:seed-site-images": "node --env-file=.env.local node_modules/tsx/dist/cli.mjs db/seed-site-images.ts"
+    "db:seed-site-images": "node --env-file=.env.local node_modules/tsx/dist/cli.mjs db/seed-site-images.ts",
+    "db:seed-carousel-images": "node --env-file=.env.local node_modules/tsx/dist/cli.mjs db/seed-carousel-images.ts",
+    "db:fix-fabric-images": "node --env-file=.env.local node_modules/tsx/dist/cli.mjs db/fix-fabric-images.ts"
   },
   "dependencies": {
     "@auth/drizzle-adapter": "^1.11.3",

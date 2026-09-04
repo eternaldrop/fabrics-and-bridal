@@ -2,6 +2,8 @@ import Image from "next/image";
 import { LinkButton } from "@/components/ui/button";
 import { Container } from "@/components/ui/container";
 import { ProductShelf } from "@/components/catalog/product-shelf";
+import { HeroCarousel } from "@/components/marketing/hero-carousel";
+import { heroCarouselSlides } from "@/components/marketing/hero-carousel-data";
 import { getPopularFabrics, getNewArrivals, getLuxuryFabrics, getBridalFabrics } from "@/lib/products";
 import { db } from "@/lib/db";
 import { productImages } from "@/db/schema";
@@ -9,7 +11,6 @@ import { asc, inArray } from "drizzle-orm";
 import { cloudinaryUrl } from "@/lib/cloudinary-url";
 import Link from "next/link";
 
-const HERO_IMAGE_ID = "fabrics-and-bridals/site/hero";
 const MOODBOARD_IMAGE_ID = "fabrics-and-bridals/site/moodboard-preview";
 
 export default async function HomePage() {
@@ -37,39 +38,25 @@ export default async function HomePage() {
 
   return (
     <div>
-      <section className="relative h-[70vh] min-h-[480px] w-full bg-ink flex items-end overflow-hidden">
-        <Image
-          src={cloudinaryUrl(HERO_IMAGE_ID, { width: 2000 })}
-          alt="Ivory wedding dress lace detail"
-          fill
-          priority
-          className="object-cover"
-        />
-        {/* Flat translucent scrim for text contrast — not a gradient. */}
-        <div className="absolute inset-0 bg-ink/45" />
+      <h1 className="sr-only">
+        Fabrics &amp; Bridals — fabric, tailoring, and bridal styling consultations
+      </h1>
 
-        <Container className="relative pb-16">
-          <h1 className="font-serif text-4xl md:text-6xl text-cream max-w-2xl leading-tight">
-            Fabric, tailoring, and bridal styling — all in one place.
-          </h1>
-          <p className="mt-4 text-cream/80 max-w-md">
-            Browse fabrics and finished outfits, or start a bridal
-            consultation and let us build your wedding palette with you.
-          </p>
-          <div className="mt-8 flex flex-wrap gap-4">
-            <LinkButton href="/catalog/fabrics" variant="primary">
-              Shop the collection
-            </LinkButton>
-            <LinkButton href="/bridal" variant="secondary">
-              Book your consultation
-            </LinkButton>
-          </div>
+      <HeroCarousel slides={heroCarouselSlides} />
+
+      {/* Persistent CTAs beneath the carousel — stay put regardless of
+          which slide is showing, rather than competing with per-slide
+          text for attention. */}
+      <div className="border-b border-taupe/30 bg-cream">
+        <Container className="py-8 flex flex-wrap items-center gap-4">
+          <LinkButton href="/catalog/fabrics" variant="primary">
+            Shop the collection
+          </LinkButton>
+          <LinkButton href="/bridal" variant="secondary">
+            Book your consultation
+          </LinkButton>
         </Container>
-
-        <p className="absolute bottom-2 right-3 text-[11px] text-cream/50">
-          Photo: &quot;Free Wedding Dress Lace Texture&quot; by Beverly &amp; Pack, CC BY 2.0
-        </p>
-      </section>
+      </div>
 
       <Container>
         {catalogIsEmpty ? (

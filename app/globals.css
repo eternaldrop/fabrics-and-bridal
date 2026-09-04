@@ -18,6 +18,8 @@
 
   --font-serif: var(--font-fraunces);
   --font-sans: var(--font-inter);
+  /* Script accent — hero carousel slide titles only. */
+  --font-script: var(--font-script);
 
   /* Minimal radius throughout — no pill-shaped/generic SaaS rounding. */
   --radius-brand: 3px;
