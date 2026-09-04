@@ -1,0 +1,29 @@
+@import "tailwindcss";
+
+:root {
+  /* Design brief palette — do not substitute other hex values. */
+  --color-cream: #f7f1e8; /* base/background, ~70% of any screen */
+  --color-rose: #d9a5ae; /* primary accent — CTAs, swatches, hover states */
+  --color-blush: #c77f8c; /* secondary accent — emphasis, more contrast */
+  --color-ink: #1a1714; /* warm near-black — headlines, body text, borders */
+  --color-taupe: #8b8378; /* secondary text, captions, dividers, hairlines */
+}
+
+@theme inline {
+  --color-cream: var(--color-cream);
+  --color-rose: var(--color-rose);
+  --color-blush: var(--color-blush);
+  --color-ink: var(--color-ink);
+  --color-taupe: var(--color-taupe);
+
+  --font-serif: var(--font-fraunces);
+  --font-sans: var(--font-inter);
+
+  /* Minimal radius throughout — no pill-shaped/generic SaaS rounding. */
+  --radius-brand: 3px;
+}
+
+body {
+  background: var(--color-cream);
+  color: var(--color-ink);
+}
