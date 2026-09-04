@@ -1,18 +1,46 @@
 import Link from "next/link";
+import Image from "next/image";
 import { LinkButton } from "@/components/ui/button";
 import { Container } from "@/components/ui/container";
+import { ProductCard } from "@/components/catalog/product-card";
+import { getProducts } from "@/lib/products";
+import { db } from "@/lib/db";
+import { productImages } from "@/db/schema";
+import { asc, inArray } from "drizzle-orm";
+import { cloudinaryUrl } from "@/lib/cloudinary-url";
 
-export default function HomePage() {
+const HERO_IMAGE_ID = "fabrics-and-bridals/site/hero";
+const MOODBOARD_IMAGE_ID = "fabrics-and-bridals/site/moodboard-preview";
+
+export default async function HomePage() {
+  const { items: latestFabrics } = await getProducts({ type: "fabric", page: 1 });
+  const featured = latestFabrics.slice(0, 5);
+
+  const coverByProduct = new Map<string, string>();
+  if (featured.length > 0) {
+    const images = await db
+      .select()
+      .from(productImages)
+      .where(inArray(productImages.productId, featured.map((p) => p.id)))
+      .orderBy(asc(productImages.position));
+    for (const img of images) {
+      if (!coverByProduct.has(img.productId)) coverByProduct.set(img.productId, img.cloudinaryPublicId);
+    }
+  }
+
   return (
     <div>
-      {/* Full-bleed hero. Swap the placeholder block below for a real
-          fabric/outfit photograph once catalog photography is ready —
-          keep the headline positioned bottom-left over the image, not
-          centered. */}
-      <section className="relative h-[70vh] min-h-[480px] w-full bg-ink flex items-end">
-        <div className="absolute inset-0 flex items-center justify-center text-taupe/40 text-sm">
-          Hero photograph goes here
-        </div>
+      <section className="relative h-[70vh] min-h-[480px] w-full bg-ink flex items-end overflow-hidden">
+        <Image
+          src={cloudinaryUrl(HERO_IMAGE_ID, { width: 2000 })}
+          alt="Ivory wedding dress lace detail"
+          fill
+          priority
+          className="object-cover"
+        />
+        {/* Flat translucent scrim for text contrast — not a gradient. */}
+        <div className="absolute inset-0 bg-ink/45" />
+
         <Container className="relative pb-16">
           <h1 className="font-serif text-4xl md:text-6xl text-cream max-w-2xl leading-tight">
             Fabric, tailoring, and bridal styling — all in one place.
@@ -30,6 +58,10 @@ export default function HomePage() {
             </LinkButton>
           </div>
         </Container>
+
+        <p className="absolute bottom-2 right-3 text-[11px] text-cream/50">
+          Photo: &quot;Free Wedding Dress Lace Texture&quot; by Beverly &amp; Pack, CC BY 2.0
+        </p>
       </section>
 
       {/* Latest arrivals — asymmetric, left-aligned; no uniform card grid. */}
@@ -42,18 +74,37 @@ export default function HomePage() {
             </Link>
           </div>
 
-          <div className="border border-dashed border-taupe/40 rounded-brand p-10 text-center">
-            <p className="text-taupe">
-              Your catalog is empty right now. Once fabrics and outfits are
-              added from the admin dashboard, they&apos;ll appear here.
-            </p>
-            <Link
-              href="/admin/products"
-              className="inline-block mt-4 text-sm text-ink underline decoration-taupe underline-offset-4 hover:text-blush"
-            >
-              Go to admin upload tool
-            </Link>
-          </div>
+          {featured.length === 0 ? (
+            <div className="border border-dashed border-taupe/40 rounded-brand p-10 text-center">
+              <p className="text-taupe">
+                Your catalog is empty right now. Once fabrics and outfits are
+                added from the admin dashboard, they&apos;ll appear here.
+              </p>
+              <Link
+                href="/admin/products"
+                className="inline-block mt-4 text-sm text-ink underline decoration-taupe underline-offset-4 hover:text-blush"
+              >
+                Go to admin upload tool
+              </Link>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-10">
+              {featured.map((item, i) => (
+                <ProductCard
+                  key={item.id}
+                  product={{
+                    slug: item.slug,
+                    name: item.name,
+                    price: item.price,
+                    category: item.category,
+                    type: "fabric",
+                    coverImagePublicId: coverByProduct.get(item.id),
+                  }}
+                  span={i === 0 ? "wide" : "normal"}
+                />
+              ))}
+            </div>
+          )}
         </Container>
       </section>
 
@@ -74,8 +125,18 @@ export default function HomePage() {
               Start a consultation
             </LinkButton>
           </div>
-          <div className="h-64 bg-rose/30 border border-taupe/30 rounded-brand flex items-center justify-center text-taupe text-sm">
-            Mood board preview goes here
+          <div>
+            <div className="relative h-80 border border-taupe/30 rounded-brand overflow-hidden">
+              <Image
+                src={cloudinaryUrl(MOODBOARD_IMAGE_ID, { width: 1000 })}
+                alt="Blush peony — an example of a wedding color palette starting point"
+                fill
+                className="object-cover"
+              />
+            </div>
+            <p className="text-[11px] text-taupe mt-2">
+              Photo: &quot;Peony Blush&quot; by Angel Lite Photography, Public Domain Mark 1.0
+            </p>
           </div>
         </Container>
       </section>

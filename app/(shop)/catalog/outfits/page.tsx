@@ -5,6 +5,7 @@ import { asc } from "drizzle-orm";
 import { Container } from "@/components/ui/container";
 import { FilterBar } from "@/components/catalog/filter-bar";
 import { ProductCard } from "@/components/catalog/product-card";
+import { Pagination } from "@/components/catalog/pagination";
 
 export const metadata = { title: "Outfit Catalog — Fabrics & Bridals" };
 
@@ -15,7 +16,7 @@ export default async function OutfitsPage({
 }) {
   const params = await searchParams;
 
-  const [items, distinct] = await Promise.all([
+  const [{ items, page, totalPages, total }, distinct] = await Promise.all([
     getProducts({
       type: "outfit",
       category: params.category,
@@ -24,6 +25,7 @@ export default async function OutfitsPage({
       search: params.search,
       minPrice: params.minPrice ? Number(params.minPrice) : undefined,
       maxPrice: params.maxPrice ? Number(params.maxPrice) : undefined,
+      page: params.page ? Number(params.page) : 1,
     }),
     getDistinctValues("outfit"),
   ]);
@@ -47,6 +49,7 @@ export default async function OutfitsPage({
       <h1 className="font-serif text-3xl md:text-4xl mb-2">Outfits</h1>
       <p className="text-taupe mb-8">
         Ready-made and made-to-measure pieces — casual, native wear, aso-ebi, and bridal.
+        {total > 0 && ` ${total} outfit${total === 1 ? "" : "s"}.`}
       </p>
 
       <FilterBar
@@ -81,6 +84,8 @@ export default async function OutfitsPage({
           ))}
         </div>
       )}
+
+      <Pagination basePath="/catalog/outfits" searchParams={params} page={page} totalPages={totalPages} />
     </Container>
   );
 }

@@ -1,6 +1,8 @@
-import { and, asc, eq, gte, lte, or, ilike, SQL } from "drizzle-orm";
+import { and, asc, count, eq, gte, lte, or, ilike, SQL } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { products, productImages, productVariants } from "@/db/schema";
+
+export const PRODUCTS_PAGE_SIZE = 15;
 
 export interface ProductFilters {
   type: "fabric" | "outfit";
@@ -12,6 +14,7 @@ export interface ProductFilters {
   minPrice?: number;
   maxPrice?: number;
   search?: string;
+  page?: number;
 }
 
 export async function getProducts(filters: ProductFilters) {
@@ -32,13 +35,27 @@ export async function getProducts(filters: ProductFilters) {
     if (searchCondition) conditions.push(searchCondition);
   }
 
-  const rows = await db
-    .select()
-    .from(products)
-    .where(and(...conditions))
-    .orderBy(asc(products.name));
+  const where = and(...conditions);
+  const page = Math.max(1, filters.page ?? 1);
 
-  return rows;
+  const [items, [{ total }]] = await Promise.all([
+    db
+      .select()
+      .from(products)
+      .where(where)
+      .orderBy(asc(products.name))
+      .limit(PRODUCTS_PAGE_SIZE)
+      .offset((page - 1) * PRODUCTS_PAGE_SIZE),
+    db.select({ total: count() }).from(products).where(where),
+  ]);
+
+  return {
+    items,
+    page,
+    pageSize: PRODUCTS_PAGE_SIZE,
+    total,
+    totalPages: Math.max(1, Math.ceil(total / PRODUCTS_PAGE_SIZE)),
+  };
 }
 
 export async function getProductBySlug(slug: string) {

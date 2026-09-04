@@ -5,6 +5,7 @@ import { asc } from "drizzle-orm";
 import { Container } from "@/components/ui/container";
 import { FilterBar } from "@/components/catalog/filter-bar";
 import { ProductCard } from "@/components/catalog/product-card";
+import { Pagination } from "@/components/catalog/pagination";
 
 export const metadata = { title: "Fabric Catalog — Fabrics & Bridals" };
 
@@ -15,7 +16,7 @@ export default async function FabricsPage({
 }) {
   const params = await searchParams;
 
-  const [items, distinct] = await Promise.all([
+  const [{ items, page, totalPages, total }, distinct] = await Promise.all([
     getProducts({
       type: "fabric",
       category: params.category,
@@ -25,6 +26,7 @@ export default async function FabricsPage({
       search: params.search,
       minPrice: params.minPrice ? Number(params.minPrice) : undefined,
       maxPrice: params.maxPrice ? Number(params.maxPrice) : undefined,
+      page: params.page ? Number(params.page) : 1,
     }),
     getDistinctValues("fabric"),
   ]);
@@ -48,6 +50,7 @@ export default async function FabricsPage({
       <h1 className="font-serif text-3xl md:text-4xl mb-2">Fabrics</h1>
       <p className="text-taupe mb-8">
         Lace, ankara, silk, and more — sold by the yard, ready for tailoring.
+        {total > 0 && ` ${total} fabric${total === 1 ? "" : "s"}.`}
       </p>
 
       <FilterBar
@@ -83,6 +86,8 @@ export default async function FabricsPage({
           ))}
         </div>
       )}
+
+      <Pagination basePath="/catalog/fabrics" searchParams={params} page={page} totalPages={totalPages} />
     </Container>
   );
 }

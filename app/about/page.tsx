@@ -18,7 +18,7 @@ export default function AboutPage() {
         <p>
           Every fabric is sold with the material, color, and price clearly
           listed, and every custom order can be paired with tailoring —
-          whether you're dressing for everyday wear, aso-ebi, or your own
+          whether you&apos;re dressing for everyday wear, aso-ebi, or your own
           wedding day.
         </p>
       </div>

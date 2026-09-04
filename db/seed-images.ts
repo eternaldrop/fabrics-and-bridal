@@ -1,190 +1,88 @@
 /**
- * One-off content seed: procedurally-drawn fabric "swatch" placeholder
- * images (not real photography — see each product's description), so the
- * catalog isn't empty while real product photos are pending. Run with:
- *   npm run db:seed-images
+ * Seeds the catalog with real, freely-licensed fabric photos so it isn't
+ * empty during development. Sources images from Openverse
+ * (api.openverse.org), which aggregates CC-licensed photos from Flickr,
+ * Wikimedia, etc. and needs no API key. Only pulls images whose license
+ * permits commercial use and modification (we resize/crop for the site).
+ * Downloaded photos are re-compressed with sharp before upload — keeps
+ * Cloudinary's 10MB limit happy and matches the site's "compress catalog
+ * images" requirement.
+ *
+ * Deletes any earlier placeholder-swatch products (from the previous
+ * procedural-graphic seed) before inserting the real-photo ones.
+ *
+ * Run with: npm run db:seed-images
  */
-import sharp from "sharp";
 import { mkdtempSync } from "fs";
 import { writeFile } from "fs/promises";
 import { tmpdir } from "os";
 import path from "path";
+import { like } from "drizzle-orm";
+import sharp from "sharp";
 import { cloudinary } from "@/lib/cloudinary";
 import { db } from "@/lib/db";
 import { products, productImages } from "@/db/schema";
 
-const WIDTH = 960;
-const HEIGHT = 1200;
-
-interface SwatchSpec {
+interface FabricSpec {
   name: string;
-  type: "fabric" | "outfit";
+  searchQueries: string[];
   category: string;
   material: string;
   color: string;
   occasion: string;
   price: number;
-  svg: (id: string) => string;
 }
 
-// Small helpers to build repeating <pattern> fills — no gradients, per the
-// site's design brief (patterns/textures instead).
-function stripePattern(id: string, bg: string, stripe: string, w = 28) {
-  return `
-    <pattern id="${id}" width="${w}" height="${w}" patternUnits="userSpaceOnUse" patternTransform="rotate(35)">
-      <rect width="${w}" height="${w}" fill="${bg}"/>
-      <rect width="${w / 2.5}" height="${w}" fill="${stripe}"/>
-    </pattern>`;
-}
-
-function dotMeshPattern(id: string, bg: string, dot: string, spacing = 34, r = 3) {
-  return `
-    <pattern id="${id}" width="${spacing}" height="${spacing}" patternUnits="userSpaceOnUse">
-      <rect width="${spacing}" height="${spacing}" fill="${bg}"/>
-      <circle cx="${spacing / 2}" cy="${spacing / 2}" r="${r}" fill="${dot}"/>
-      <circle cx="0" cy="0" r="${r}" fill="${dot}"/>
-      <circle cx="${spacing}" cy="0" r="${r}" fill="${dot}"/>
-      <circle cx="0" cy="${spacing}" r="${r}" fill="${dot}"/>
-      <circle cx="${spacing}" cy="${spacing}" r="${r}" fill="${dot}"/>
-    </pattern>`;
-}
-
-function meshPattern(id: string, bg: string, line: string, spacing = 24) {
-  return `
-    <pattern id="${id}" width="${spacing}" height="${spacing}" patternUnits="userSpaceOnUse">
-      <rect width="${spacing}" height="${spacing}" fill="${bg}"/>
-      <path d="M0 0 L${spacing} ${spacing} M${spacing} 0 L0 ${spacing}" stroke="${line}" stroke-width="1"/>
-    </pattern>`;
-}
-
-function diamondPattern(id: string, bg: string, a: string, b: string, size = 60) {
-  return `
-    <pattern id="${id}" width="${size}" height="${size}" patternUnits="userSpaceOnUse">
-      <rect width="${size}" height="${size}" fill="${bg}"/>
-      <polygon points="${size / 2},4 ${size - 4},${size / 2} ${size / 2},${size - 4} 4,${size / 2}" fill="${a}"/>
-      <circle cx="${size / 2}" cy="${size / 2}" r="4" fill="${b}"/>
-    </pattern>`;
-}
-
-function crosshatchPattern(id: string, bg: string, line: string, spacing = 16) {
-  return `
-    <pattern id="${id}" width="${spacing}" height="${spacing}" patternUnits="userSpaceOnUse">
-      <rect width="${spacing}" height="${spacing}" fill="${bg}"/>
-      <line x1="0" y1="0" x2="0" y2="${spacing}" stroke="${line}" stroke-width="1"/>
-      <line x1="0" y1="0" x2="${spacing}" y2="0" stroke="${line}" stroke-width="1"/>
-    </pattern>`;
-}
-
-function wrap(defs: string, patternId: string, label: string) {
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${WIDTH}" height="${HEIGHT}" viewBox="0 0 ${WIDTH} ${HEIGHT}">
-    <defs>${defs(patternId)}</defs>
-    <rect width="${WIDTH}" height="${HEIGHT}" fill="url(#${patternId})"/>
-    <text x="24" y="${HEIGHT - 24}" font-family="Georgia, serif" font-size="20" fill="#1A171466">${label}</text>
-  </svg>`;
-}
-
-const swatches: SwatchSpec[] = [
-  {
-    name: "Ankara Wax Print — Ochre Diamond",
-    type: "fabric",
-    category: "aso-ebi",
-    material: "Ankara / wax print cotton",
-    color: "Ochre",
-    occasion: "party",
-    price: 8500,
-    svg: (id) => wrap((pid) => diamondPattern(pid, "#1A1714", "#C77F8C", "#F7F1E8", 64), id, "Ankara Wax Print"),
-  },
-  {
-    name: "Silk Charmeuse — Wine",
-    type: "fabric",
-    category: "occasion wear",
-    material: "Silk charmeuse",
-    color: "Wine",
-    occasion: "evening",
-    price: 15000,
-    svg: (id) => wrap((pid) => stripePattern(pid, "#5C1F2E", "#7B2D3E", 22), id, "Silk Charmeuse"),
-  },
-  {
-    name: "Aso-Oke Woven Stripe — Gold",
-    type: "fabric",
-    category: "aso-ebi",
-    material: "Aso-oke",
-    color: "Gold",
-    occasion: "wedding guest",
-    price: 22000,
-    svg: (id) => wrap((pid) => stripePattern(pid, "#8B8378", "#C9A227", 18), id, "Aso-Oke Woven"),
-  },
-  {
-    name: "Cotton Chambray — Taupe",
-    type: "fabric",
-    category: "casual",
-    material: "Cotton chambray",
-    color: "Taupe",
-    occasion: "everyday",
-    price: 4500,
-    svg: (id) => wrap((pid) => crosshatchPattern(pid, "#F7F1E8", "#8B8378", 16), id, "Cotton Chambray"),
-  },
-  {
-    name: "Chiffon Floral Dot — Dusty Rose",
-    type: "fabric",
-    category: "occasion wear",
-    material: "Chiffon",
-    color: "Dusty rose",
-    occasion: "party",
-    price: 6500,
-    svg: (id) => wrap((pid) => dotMeshPattern(pid, "#F7F1E8", "#D9A5AE", 30, 4), id, "Chiffon Floral Dot"),
-  },
-  {
-    name: "Ivory Chantilly Lace",
-    type: "fabric",
-    category: "bridal",
-    material: "Chantilly lace",
-    color: "Ivory",
-    occasion: "wedding",
-    price: 28000,
-    svg: (id) => wrap((pid) => meshPattern(pid, "#FBF7EE", "#8B8378", 20), id, "Ivory Chantilly Lace"),
-  },
-  {
-    name: "Blush Tulle",
-    type: "fabric",
-    category: "bridal",
-    material: "Tulle",
-    color: "Blush",
-    occasion: "wedding",
-    price: 9000,
-    svg: (id) => wrap((pid) => dotMeshPattern(pid, "#FBF7EE", "#D9A5AE", 26, 2.5), id, "Blush Tulle"),
-  },
-  {
-    name: "Champagne Silk Satin",
-    type: "fabric",
-    category: "bridal",
-    material: "Silk satin",
-    color: "Champagne",
-    occasion: "wedding",
-    price: 26000,
-    svg: (id) => wrap((pid) => stripePattern(pid, "#E8D8B8", "#D9C49A", 26), id, "Champagne Silk Satin"),
-  },
-  {
-    name: "Pearl Duchess Satin",
-    type: "fabric",
-    category: "bridal",
-    material: "Duchess satin",
-    color: "Pearl white",
-    occasion: "wedding",
-    price: 27000,
-    svg: (id) => wrap((pid) => stripePattern(pid, "#F3EFE6", "#E3DCCB", 26), id, "Pearl Duchess Satin"),
-  },
-  {
-    name: "Beaded Bridal Lace — Ivory & Gold",
-    type: "fabric",
-    category: "bridal",
-    material: "Beaded lace",
-    color: "Ivory",
-    occasion: "wedding",
-    price: 35000,
-    svg: (id) => wrap((pid) => diamondPattern(pid, "#FBF7EE", "#C9A227", "#8B8378", 48), id, "Beaded Bridal Lace"),
-  },
+// 10 general fabrics + 8 under the "bridal" category — 18 total, enough to
+// span two pages at the 15-per-page catalog page size. Each has a couple
+// of fallback search queries in case the first turns up nothing usable.
+const fabrics: FabricSpec[] = [
+  { name: "Ankara Wax Print", searchQueries: ["ankara wax print fabric", "african wax print fabric", "ankara cloth"], category: "aso-ebi", material: "Ankara / wax print cotton", color: "Multicolor", occasion: "party", price: 8500 },
+  { name: "Silk Charmeuse", searchQueries: ["red silk fabric texture", "silk fabric"], category: "occasion wear", material: "Silk charmeuse", color: "Red", occasion: "evening", price: 15000 },
+  { name: "Aso-Oke Woven Cloth", searchQueries: ["aso oke woven fabric", "aso oke nigeria", "handwoven cloth nigeria", "woven textile africa"], category: "aso-ebi", material: "Aso-oke", color: "Gold", occasion: "wedding guest", price: 22000 },
+  { name: "Cotton Chambray", searchQueries: ["blue cotton chambray fabric", "cotton fabric texture"], category: "casual", material: "Cotton chambray", color: "Blue", occasion: "everyday", price: 4500 },
+  { name: "Pastel Chiffon", searchQueries: ["pastel chiffon fabric", "chiffon fabric texture"], category: "occasion wear", material: "Chiffon", color: "Pastel pink", occasion: "party", price: 6500 },
+  { name: "Natural Linen", searchQueries: ["natural linen fabric texture", "linen fabric"], category: "casual", material: "Linen", color: "Natural", occasion: "everyday", price: 5200 },
+  { name: "Emerald Velvet", searchQueries: ["green velvet fabric texture", "velvet fabric"], category: "occasion wear", material: "Velvet", color: "Emerald", occasion: "evening", price: 18000 },
+  { name: "Indigo Denim", searchQueries: ["blue denim fabric texture", "denim fabric close up"], category: "casual", material: "Denim", color: "Indigo", occasion: "everyday", price: 4000 },
+  { name: "Gold Brocade", searchQueries: ["gold brocade fabric texture", "brocade fabric"], category: "aso-ebi", material: "Brocade", color: "Gold", occasion: "wedding guest", price: 19500 },
+  { name: "Kente Cloth", searchQueries: ["kente cloth fabric", "kente cloth ghana"], category: "aso-ebi", material: "Kente", color: "Multicolor", occasion: "party", price: 24000 },
+  { name: "Ivory Chantilly Lace", searchQueries: ["ivory lace fabric", "white lace fabric texture"], category: "bridal", material: "Chantilly lace", color: "Ivory", occasion: "wedding", price: 28000 },
+  { name: "Blush Tulle", searchQueries: ["pink tulle fabric", "tulle fabric texture"], category: "bridal", material: "Tulle", color: "Blush", occasion: "wedding", price: 9000 },
+  { name: "Champagne Silk Satin", searchQueries: ["champagne silk satin fabric", "satin fabric gold"], category: "bridal", material: "Silk satin", color: "Champagne", occasion: "wedding", price: 26000 },
+  { name: "White Duchess Satin", searchQueries: ["white satin fabric texture", "satin fabric"], category: "bridal", material: "Duchess satin", color: "White", occasion: "wedding", price: 27000 },
+  { name: "Beaded Bridal Lace", searchQueries: ["beaded lace fabric bridal", "beaded lace fabric", "embellished lace fabric"], category: "bridal", material: "Beaded lace", color: "Ivory", occasion: "wedding", price: 35000 },
+  { name: "White Organza", searchQueries: ["white organza fabric", "organza fabric texture"], category: "bridal", material: "Organza", color: "White", occasion: "wedding", price: 12000 },
+  { name: "Chantilly Lace Detail", searchQueries: ["chantilly lace fabric close up", "lace fabric detail"], category: "bridal", material: "Chantilly lace", color: "White", occasion: "wedding", price: 30000 },
+  { name: "Ivory Silk Chiffon", searchQueries: ["ivory chiffon fabric texture", "cream chiffon fabric"], category: "bridal", material: "Silk chiffon", color: "Ivory", occasion: "wedding", price: 20000 },
 ];
+
+interface OpenverseResult {
+  url: string;
+  creator: string | null;
+  license: string;
+  license_version: string | null;
+  license_url: string | null;
+  foreign_landing_url: string;
+  provider: string;
+}
+
+async function searchOpenverse(query: string): Promise<OpenverseResult | null> {
+  const url = `https://api.openverse.org/v1/images/?q=${encodeURIComponent(query)}&license_type=commercial,modification&page_size=10&mature=false`;
+  const res = await fetch(url, { headers: { "User-Agent": "fabrics-and-bridals-seed-script/1.0" } });
+  if (!res.ok) return null;
+  const data = await res.json();
+  const results: OpenverseResult[] = data.results ?? [];
+  return results.find((r) => /\.(jpe?g|png)(\?.*)?$/i.test(r.url)) ?? results[0] ?? null;
+}
+
+async function findImage(queries: string[]): Promise<OpenverseResult | null> {
+  for (const query of queries) {
+    const result = await searchOpenverse(query);
+    if (result) return result;
+  }
+  return null;
+}
 
 function slugify(name: string) {
   return name
@@ -194,51 +92,82 @@ function slugify(name: string) {
     .replace(/(^-|-$)/g, "");
 }
 
+function attributionText(result: OpenverseResult) {
+  const creator = result.creator ?? "Unknown creator";
+  const license = result.license.toUpperCase();
+  const version = result.license_version ? ` ${result.license_version}` : "";
+  return `Photo by ${creator} (${result.provider}), licensed CC ${license}${version}. Source: ${result.foreign_landing_url}`;
+}
+
 async function main() {
-  const tmpDir = mkdtempSync(path.join(tmpdir(), "fabric-swatches-"));
-  console.log(`Rendering ${swatches.length} placeholder swatches...`);
+  console.log("Removing earlier placeholder-swatch products...");
+  await db.delete(products).where(like(products.description, "Placeholder swatch graphic%"));
 
-  for (const swatch of swatches) {
-    const id = slugify(swatch.name);
-    const svgMarkup = swatch.svg(id);
-    const pngPath = path.join(tmpDir, `${id}.png`);
+  const tmpDir = mkdtempSync(path.join(tmpdir(), "fabric-photos-"));
+  console.log(`Sourcing ${fabrics.length} real fabric photos from Openverse...`);
 
-    await sharp(Buffer.from(svgMarkup)).png().toFile(pngPath);
+  for (const fabric of fabrics) {
+    try {
+      const result = await findImage(fabric.searchQueries);
+      if (!result) {
+        console.warn(`  ! No result for "${fabric.name}" — skipping`);
+        continue;
+      }
 
-    const upload = await cloudinary.uploader.upload(pngPath, {
-      folder: "fabrics-and-bridals/seed-swatches",
-      public_id: id,
-      overwrite: true,
-    });
+      const imageRes = await fetch(result.url);
+      if (!imageRes.ok) {
+        console.warn(`  ! Failed to download image for "${fabric.name}" — skipping`);
+        continue;
+      }
+      const rawBuffer = Buffer.from(await imageRes.arrayBuffer());
 
-    const slug = `${id}-${Date.now().toString(36)}`;
+      // Downscale/recompress: keeps every upload well under Cloudinary's
+      // free-tier size limit and matches the site's image-compression goal.
+      const compressed = await sharp(rawBuffer)
+        .resize({ width: 1600, height: 2000, fit: "inside", withoutEnlargement: true })
+        .jpeg({ quality: 82 })
+        .toBuffer();
 
-    const [product] = await db
-      .insert(products)
-      .values({
-        type: swatch.type,
-        name: swatch.name,
-        slug,
-        description:
-          "Placeholder swatch graphic — not real photography. Replace with an actual product photo from the admin upload tool when available.",
-        category: swatch.category,
-        material: swatch.material,
-        color: swatch.color,
-        occasion: swatch.occasion,
-        price: String(swatch.price),
-        isCustomOrderable: swatch.category === "bridal",
-        stockQuantity: swatch.category === "bridal" ? null : 20,
-        tags: [swatch.category, swatch.material, swatch.color].map((s) => s.toLowerCase()),
-      })
-      .returning();
+      const id = slugify(fabric.name);
+      const localPath = path.join(tmpDir, `${id}.jpg`);
+      await writeFile(localPath, compressed);
 
-    await db.insert(productImages).values({
-      productId: product.id,
-      cloudinaryPublicId: upload.public_id,
-      position: 0,
-    });
+      const upload = await cloudinary.uploader.upload(localPath, {
+        folder: "fabrics-and-bridals/seed-photos",
+        public_id: id,
+        overwrite: true,
+      });
 
-    console.log(`  + ${swatch.name} -> ${upload.public_id}`);
+      const slug = `${id}-${Date.now().toString(36)}`;
+
+      const [product] = await db
+        .insert(products)
+        .values({
+          type: "fabric",
+          name: fabric.name,
+          slug,
+          description: attributionText(result),
+          category: fabric.category,
+          material: fabric.material,
+          color: fabric.color,
+          occasion: fabric.occasion,
+          price: String(fabric.price),
+          isCustomOrderable: fabric.category === "bridal",
+          stockQuantity: fabric.category === "bridal" ? null : 20,
+          tags: [fabric.category, fabric.material, fabric.color].map((s) => s.toLowerCase()),
+        })
+        .returning();
+
+      await db.insert(productImages).values({
+        productId: product.id,
+        cloudinaryPublicId: upload.public_id,
+        position: 0,
+      });
+
+      console.log(`  + ${fabric.name} -> ${upload.public_id} (credit: ${result.creator ?? "unknown"})`);
+    } catch (err) {
+      console.warn(`  ! Error on "${fabric.name}" — skipping:`, err instanceof Error ? err.message : err);
+    }
   }
 
   console.log("Done.");

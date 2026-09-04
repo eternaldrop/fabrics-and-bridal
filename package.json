@@ -10,7 +10,8 @@
     "db:generate": "node --env-file=.env.local node_modules/drizzle-kit/bin.cjs generate",
     "db:push": "node --env-file=.env.local node_modules/drizzle-kit/bin.cjs push",
     "db:studio": "node --env-file=.env.local node_modules/drizzle-kit/bin.cjs studio",
-    "db:seed-images": "node --env-file=.env.local node_modules/tsx/dist/cli.mjs db/seed-images.ts"
+    "db:seed-images": "node --env-file=.env.local node_modules/tsx/dist/cli.mjs db/seed-images.ts",
+    "db:seed-site-images": "node --env-file=.env.local node_modules/tsx/dist/cli.mjs db/seed-site-images.ts"
   },
   "dependencies": {
     "@auth/drizzle-adapter": "^1.11.3",
