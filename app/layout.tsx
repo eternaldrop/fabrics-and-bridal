@@ -19,7 +19,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Waystream Fabrics & Bridal",
+  title: "Fabrics & Bridals",
   description:
     "Fabrics, made-to-measure outfits, and bridal styling consultations.",
 };

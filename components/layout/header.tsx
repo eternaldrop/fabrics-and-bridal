@@ -16,7 +16,7 @@ export async function Header() {
     <header className="border-b border-taupe/30">
       <Container className="flex items-center justify-between py-5">
         <Link href="/" className="font-serif text-xl text-ink">
-          Waystream
+          Fabrics &amp; Bridals
         </Link>
 
         <nav className="hidden md:flex items-center gap-8">

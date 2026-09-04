@@ -6,7 +6,7 @@ import { Container } from "@/components/ui/container";
 import { FilterBar } from "@/components/catalog/filter-bar";
 import { ProductCard } from "@/components/catalog/product-card";
 
-export const metadata = { title: "Outfits — Waystream" };
+export const metadata = { title: "Outfit Catalog — Fabrics & Bridals" };
 
 export default async function OutfitsPage({
   searchParams,

@@ -1,4 +1,4 @@
-# Waystream Fabrics & Bridal
+# Fabrics & Bridals
 
 Fabric & fashion e-commerce platform with a bridal consultation and mood
 board module. Next.js (App Router) + PostgreSQL (Neon) + Drizzle ORM +

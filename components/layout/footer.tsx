@@ -6,7 +6,7 @@ export function Footer() {
     <footer className="border-t border-taupe/30 mt-24">
       <Container className="py-10 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <p className="text-sm text-taupe">
-          &copy; {new Date().getFullYear()} Waystream Fabrics &amp; Bridal
+          &copy; {new Date().getFullYear()} Fabrics &amp; Bridals
         </p>
         <div className="flex gap-6">
           <Link href="/about" className="text-sm text-taupe hover:text-ink">
