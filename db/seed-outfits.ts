@@ -7,6 +7,7 @@
  *
  * Run with: npm run db:seed-outfits
  */
+import { readFile } from "fs/promises";
 import { mkdtempSync } from "fs";
 import { writeFile } from "fs/promises";
 import { tmpdir } from "os";
@@ -16,6 +17,13 @@ import sharp from "sharp";
 import { cloudinary } from "@/lib/cloudinary";
 import { db } from "@/lib/db";
 import { products, productImages, productVariants } from "@/db/schema";
+
+// Local, already-verified styling shots — a second real angle of the exact
+// same garment/session as an outfit's main photo (not a new identifiable
+// person), used to populate the product gallery's thumbnail row. Wikimedia
+// had no further usable angles for the other three outfits, so those stay
+// single-image; the gallery degrades to a full-width main image for them.
+const GALLERY_SRC_DIR = "C:\\Users\\OYINKANSOLA-ZYONEL\\AppData\\Local\\Temp\\outfit-gallery-src";
 
 interface OutfitSpec {
   name: string;
@@ -29,6 +37,10 @@ interface OutfitSpec {
   // Either a fresh external photo to download, or an existing Cloudinary
   // public_id already uploaded (no re-fetch needed).
   source: { kind: "download"; url: string; publicId: string; credit: string } | { kind: "existing"; publicId: string };
+  // Up to 3 additional styling shots for the product gallery's thumbnail
+  // row — same product, different pose/angle. Optional; most outfits
+  // don't have a verified second angle yet.
+  extraImages?: { localFile: string; publicId: string }[];
 }
 
 const outfits: OutfitSpec[] = [
@@ -47,6 +59,12 @@ const outfits: OutfitSpec[] = [
       publicId: "fabrics-and-bridals/outfits/colorblock-top",
       credit: "Photo by Obixt, CC BY-SA 4.0. Source: https://commons.wikimedia.org/wiki/File:OBI_Xtra_traditional_attire_2.jpg",
     },
+    extraImages: [
+      {
+        localFile: "colorblock-pose2.jpg",
+        publicId: "fabrics-and-bridals/outfits/colorblock-top-2",
+      },
+    ],
   },
   {
     name: "Embroidered Shift Dress",
@@ -79,6 +97,12 @@ const outfits: OutfitSpec[] = [
       publicId: "fabrics-and-bridals/outfits/navy-agbada-set",
       credit: "Photo by Sweetwata, CC BY-SA 4.0. Source: https://commons.wikimedia.org/wiki/File:Men_clothes_agbada.jpg",
     },
+    extraImages: [
+      {
+        localFile: "agbada-detail.jpg",
+        publicId: "fabrics-and-bridals/outfits/navy-agbada-set-2",
+      },
+    ],
   },
   {
     name: "Blush Aso-Ebi Two-Piece",
@@ -173,6 +197,25 @@ async function main() {
       cloudinaryPublicId: publicId,
       position: 0,
     });
+
+    for (const [i, extra] of (outfit.extraImages ?? []).entries()) {
+      const raw = await readFile(path.join(GALLERY_SRC_DIR, extra.localFile));
+      const compressed = await sharp(raw)
+        .resize({ width: 1600, height: 2000, fit: "inside", withoutEnlargement: true })
+        .jpeg({ quality: 82 })
+        .toBuffer();
+      const localPath = path.join(tmpDir, `${slugify(outfit.name)}-extra-${i}.jpg`);
+      await writeFile(localPath, compressed);
+      const upload = await cloudinary.uploader.upload(localPath, {
+        public_id: extra.publicId,
+        overwrite: true,
+      });
+      await db.insert(productImages).values({
+        productId: product.id,
+        cloudinaryPublicId: upload.public_id,
+        position: i + 1,
+      });
+    }
 
     if (outfit.sizes.length > 0) {
       await db.insert(productVariants).values(

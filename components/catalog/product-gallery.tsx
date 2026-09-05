@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import { cloudinaryUrl } from "@/lib/cloudinary-url";
 
@@ -18,6 +18,15 @@ export function ProductGallery({
   const [images, setImages] = useState(initialImages);
   const [lightboxOpen, setLightboxOpen] = useState(false);
 
+  useEffect(() => {
+    if (!lightboxOpen) return;
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") setLightboxOpen(false);
+    }
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [lightboxOpen]);
+
   if (images.length === 0) {
     return (
       <div className="w-full aspect-[4/5] bg-taupe/10 border border-taupe/20 flex items-center justify-center text-taupe text-sm">
@@ -30,6 +39,7 @@ export function ProductGallery({
   // Layout is fixed at main + up to 3 styling shots; extra uploads beyond
   // that aren't shown here.
   const thumbnails = images.slice(1, 4);
+  const hasThumbnails = thumbnails.length > 0;
 
   // Swap the clicked thumbnail into the main position; the previous main
   // image takes that thumbnail's old slot.
@@ -45,23 +55,26 @@ export function ProductGallery({
 
   return (
     <div>
-      <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr] gap-3">
+      {/* Without styling shots, the main image just takes the full width —
+          reserving a second grid column here would leave a hollow gap
+          where the thumbnails would have been. */}
+      <div className={`grid grid-cols-1 gap-3 ${hasThumbnails ? "md:grid-cols-[2fr_1fr]" : ""}`}>
         <button
           type="button"
           onClick={() => setLightboxOpen(true)}
-          className="relative w-full aspect-[4/5] bg-taupe/10 border border-taupe/20 overflow-hidden cursor-zoom-in block order-1"
+          className="group relative w-full aspect-[4/5] bg-taupe/10 border border-taupe/20 overflow-hidden cursor-zoom-in block order-1"
         >
           <Image
             src={cloudinaryUrl(main.cloudinaryPublicId, { width: 1200 })}
             alt={productName}
             fill
             sizes="(min-width: 768px) 60vw, 100vw"
-            className="object-cover"
+            className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
             priority
           />
         </button>
 
-        {thumbnails.length > 0 && (
+        {hasThumbnails && (
           <div className="grid grid-cols-3 md:grid-cols-1 gap-3 order-2">
             {thumbnails.map((img, i) => (
               <button
@@ -95,7 +108,10 @@ export function ProductGallery({
           >
             Close
           </button>
-          <div className="relative w-full max-w-3xl aspect-[4/5]">
+          <div
+            className="relative w-full max-w-3xl aspect-[4/5]"
+            onClick={(e) => e.stopPropagation()}
+          >
             <Image
               src={cloudinaryUrl(main.cloudinaryPublicId, { width: 1600 })}
               alt={productName}
