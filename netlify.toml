@@ -3,9 +3,11 @@
 
 [build.environment]
   # NEXT_PUBLIC_* vars are meant to be inlined into client JS - their presence
-  # in the output isn't a leak. The turbopack build cache embeds env values
-  # for cache-invalidation fingerprinting; that cache isn't served to visitors.
-  SECRETS_SCAN_OMIT_KEYS = "NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET"
+  # in the output isn't a leak. CLOUDINARY_CLOUD_NAME mirrors the public one
+  # (cloud name isn't secret, see .env.example) so it shows up client-side too.
+  # The turbopack build cache embeds env values for cache-invalidation
+  # fingerprinting; that cache isn't served to visitors.
+  SECRETS_SCAN_OMIT_KEYS = "NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET,CLOUDINARY_CLOUD_NAME"
   SECRETS_SCAN_OMIT_PATHS = ".netlify/.next/cache/**"
 
 [[plugins]]
