@@ -6,6 +6,7 @@ interface ShelfProduct {
   slug: string;
   name: string;
   price: string;
+  salePrice?: string | null;
   category: string | null;
   type: "fabric" | "outfit";
 }
@@ -38,6 +39,7 @@ export function ProductShelf({
             slug: item.slug,
             name: item.name,
             price: item.price,
+            salePrice: item.salePrice,
             category: item.category,
             type: item.type,
             coverImagePublicId: coverByProduct.get(item.id),

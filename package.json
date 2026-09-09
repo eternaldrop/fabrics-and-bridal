@@ -30,7 +30,9 @@
     "db:seed-new-outfits-2": "node --env-file=.env.local node_modules/tsx/dist/cli.mjs db/seed-new-outfits-2.ts",
     "db:seed-hero-images": "node --env-file=.env.local node_modules/tsx/dist/cli.mjs db/seed-hero-images.ts",
     "db:seed-outfit-final-images": "node --env-file=.env.local node_modules/tsx/dist/cli.mjs db/seed-outfit-final-images.ts",
-    "db:restore-fabric-images": "node --env-file=.env.local node_modules/tsx/dist/cli.mjs db/restore-fabric-images.ts"
+    "db:restore-fabric-images": "node --env-file=.env.local node_modules/tsx/dist/cli.mjs db/restore-fabric-images.ts",
+    "db:seed-more-consultations": "node --env-file=.env.local node_modules/tsx/dist/cli.mjs db/seed-more-consultations.ts",
+    "db:put-items-on-sale": "node --env-file=.env.local node_modules/tsx/dist/cli.mjs db/put-items-on-sale.ts"
   },
   "dependencies": {
     "@auth/drizzle-adapter": "^1.11.3",

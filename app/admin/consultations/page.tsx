@@ -1,7 +1,8 @@
 import Image from "next/image";
-import { getConsultationsPage } from "@/lib/consultations";
+import { getConsultationsPage, getConsultationStatusCounts } from "@/lib/consultations";
 import { cloudinaryUrl } from "@/lib/cloudinary-url";
 import { Reveal } from "@/components/ui/reveal";
+import { AdminStatCard } from "@/components/admin/admin-stat-card";
 import { CalendarHeartIcon } from "@/components/admin/icons";
 import { ConsultationStatusSelect } from "@/components/admin/consultation-status-select";
 import { Pagination } from "@/components/catalog/pagination";
@@ -19,9 +20,10 @@ export default async function AdminConsultationsPage({
   searchParams: Promise<Record<string, string | undefined>>;
 }) {
   const params = await searchParams;
-  const { items: consultations, page, totalPages, total } = await getConsultationsPage(
-    params.page ? Number(params.page) : 1
-  );
+  const [{ items: consultations, page, totalPages, total }, statusCounts] = await Promise.all([
+    getConsultationsPage(params.page ? Number(params.page) : 1),
+    getConsultationStatusCounts(),
+  ]);
 
   return (
     <Reveal>
@@ -33,11 +35,22 @@ export default async function AdminConsultationsPage({
       </div>
       <p className="text-taupe mb-8">
         Every consultation request booked from the shop&apos;s guided form.
-        {total > 0 && ` ${total} request${total === 1 ? "" : "s"}.`}
       </p>
 
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-10">
+        <AdminStatCard label="Total requests" value={statusCounts.total} accent="bg-taupe/20 text-ink" />
+        <AdminStatCard label="Requested" value={statusCounts.requested} accent="bg-rose/20 text-blush" />
+        <AdminStatCard label="Ongoing" value={statusCounts.ongoing} accent="bg-blush/20 text-blush" />
+        <AdminStatCard label="Finished" value={statusCounts.finished} accent="bg-taupe/20 text-taupe" />
+      </div>
+
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="font-serif text-2xl">All requests</h2>
+        <p className="text-sm text-taupe">{total} total</p>
+      </div>
+
       {consultations.length === 0 ? (
-        <div className="border border-dashed border-taupe/40 rounded-brand p-8 text-center">
+        <div className="border border-dashed border-taupe/40 rounded-brand p-10 text-center">
           <p className="text-taupe">No consultation requests yet.</p>
         </div>
       ) : (

@@ -76,6 +76,9 @@ export const products = pgTable("products", {
   width: text("width"), // fabric-specific, e.g. "58 inches"
   careInstructions: text("care_instructions"), // fabric-specific
   price: numeric("price", { precision: 10, scale: 2 }).notNull(),
+  // Nullable — set only while the item is on sale. Always less than `price`;
+  // that's enforced in the app layer (API validation), not the DB.
+  salePrice: numeric("sale_price", { precision: 10, scale: 2 }),
   isCustomOrderable: boolean("is_custom_orderable").notNull().default(false),
   stockQuantity: integer("stock_quantity"), // nullable for made-to-order
   tags: jsonb("tags").$type<string[]>().default([]),

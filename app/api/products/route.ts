@@ -15,12 +15,16 @@ const productSchema = z.object({
   width: z.string().optional(),
   careInstructions: z.string().optional(),
   price: z.coerce.number().positive(),
+  salePrice: z.coerce.number().positive().optional(),
   isCustomOrderable: z.boolean().default(false),
   stockQuantity: z.coerce.number().int().nonnegative().optional(),
   tags: z.array(z.string()).default([]),
   images: z.array(z.string()).min(1, "At least one image is required"),
   sizes: z.array(z.string()).default([]),
   colorVariants: z.array(z.string()).default([]),
+}).refine((data) => data.salePrice === undefined || data.salePrice < data.price, {
+  message: "Sale price must be lower than the regular price.",
+  path: ["salePrice"],
 });
 
 function slugify(name: string) {
@@ -65,6 +69,7 @@ export async function POST(request: Request) {
       width: data.width,
       careInstructions: data.careInstructions,
       price: String(data.price),
+      salePrice: data.salePrice !== undefined ? String(data.salePrice) : undefined,
       isCustomOrderable: data.isCustomOrderable,
       stockQuantity: data.stockQuantity,
       tags: data.tags,

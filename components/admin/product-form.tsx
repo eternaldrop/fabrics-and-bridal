@@ -82,7 +82,10 @@ function PhotoSlot({
   );
 }
 
-export function ProductForm({ fixedType }: { fixedType?: ProductType } = {}) {
+export function ProductForm({
+  fixedType,
+  onSaved,
+}: { fixedType?: ProductType; onSaved?: () => void } = {}) {
   const router = useRouter();
   const [type, setType] = useState<ProductType>(fixedType ?? "fabric");
   // Every product uses three fixed photo slots — the item itself, plus up
@@ -96,6 +99,7 @@ export function ProductForm({ fixedType }: { fixedType?: ProductType } = {}) {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [onSale, setOnSale] = useState(false);
 
   const submittedImages = [mainImage, styleImage1, styleImage2].filter(
     (id): id is string => Boolean(id)
@@ -126,6 +130,17 @@ export function ProductForm({ fixedType }: { fixedType?: ProductType } = {}) {
       .map((s) => s.trim())
       .filter(Boolean);
 
+    const price = form.get("price");
+    const salePrice = onSale ? form.get("salePrice") : "";
+    if (onSale && (!salePrice || Number(salePrice) <= 0)) {
+      setError("Enter a sale price.");
+      return;
+    }
+    if (onSale && price && Number(salePrice) >= Number(price)) {
+      setError("The sale price must be lower than the regular price.");
+      return;
+    }
+
     const payload = {
       type,
       name: form.get("name"),
@@ -136,7 +151,8 @@ export function ProductForm({ fixedType }: { fixedType?: ProductType } = {}) {
       occasion: form.get("occasion") || undefined,
       width: type === "fabric" ? form.get("width") || undefined : undefined,
       careInstructions: type === "fabric" ? form.get("careInstructions") || undefined : undefined,
-      price: form.get("price"),
+      price,
+      salePrice: onSale ? salePrice : undefined,
       isCustomOrderable: form.get("isCustomOrderable") === "on",
       stockQuantity: form.get("stockQuantity") || undefined,
       tags,
@@ -163,14 +179,19 @@ export function ProductForm({ fixedType }: { fixedType?: ProductType } = {}) {
     setMainImage(null);
     setStyleImage1(null);
     setStyleImage2(null);
+    setOnSale(false);
     e.currentTarget.reset();
     router.refresh();
+
+    if (onSaved) {
+      window.setTimeout(onSaved, 700);
+    }
   }
 
   const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 border border-taupe/30 rounded-brand p-6">
+    <form onSubmit={handleSubmit} className="space-y-6">
       {!fixedType && (
         <div className="flex gap-6">
           <label className="flex items-center gap-2 text-sm cursor-pointer transition-colors duration-150 hover:text-blush">
@@ -258,6 +279,24 @@ export function ProductForm({ fixedType }: { fixedType?: ProductType } = {}) {
           </div>
         </div>
       )}
+
+      <div>
+        <label className="flex items-center gap-2 text-sm cursor-pointer transition-colors duration-150 hover:text-blush">
+          <input
+            type="checkbox"
+            checked={onSale}
+            onChange={(e) => setOnSale(e.target.checked)}
+            className="accent-ink transition-transform duration-150 active:scale-90"
+          />
+          Put this item on sale
+        </label>
+        {onSale && (
+          <div className="mt-3 max-w-xs">
+            <Label htmlFor="salePrice">Sale price</Label>
+            <Input id="salePrice" name="salePrice" type="number" step="0.01" min="0" required={onSale} />
+          </div>
+        )}
+      </div>
 
       {type === "outfit" && (
         <div>

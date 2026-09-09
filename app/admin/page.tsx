@@ -3,6 +3,7 @@ import { desc, eq, count } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { products, orders } from "@/db/schema";
 import { getPendingConsultationCount, getRecentConsultations } from "@/lib/consultations";
+import { getRecentOrders } from "@/lib/orders";
 import { formatPrice } from "@/lib/format";
 import { Reveal } from "@/components/ui/reveal";
 import { SwatchIcon, HangerIcon, BagIcon, CalendarHeartIcon } from "@/components/admin/icons";
@@ -16,6 +17,21 @@ const consultationStatusLabels: Record<string, string> = {
   finished: "Finished",
 };
 
+const orderStatusLabels: Record<string, string> = {
+  pending: "Order placed",
+  confirmed: "Confirmed",
+  in_production: "In production",
+  ready: "Ready",
+  shipped: "Shipped",
+  delivered: "Delivered",
+  cancelled: "Cancelled",
+};
+
+// Always the 5 most recent of each section, regardless of how many exist
+// in total — recent orders, recent consultations, and recently added
+// catalog items all pass limit 5 into their respective queries below.
+const RECENT_SECTION_LIMIT = 5;
+
 export default async function AdminDashboardPage() {
   const [
     [{ fabricCount }],
@@ -23,14 +39,16 @@ export default async function AdminDashboardPage() {
     [{ orderCount }],
     pendingConsultations,
     recentConsultations,
+    recentOrders,
     recentProducts,
   ] = await Promise.all([
     db.select({ fabricCount: count() }).from(products).where(eq(products.type, "fabric")),
     db.select({ outfitCount: count() }).from(products).where(eq(products.type, "outfit")),
     db.select({ orderCount: count() }).from(orders),
     getPendingConsultationCount(),
-    getRecentConsultations(5),
-    db.select().from(products).orderBy(desc(products.createdAt)).limit(5),
+    getRecentConsultations(RECENT_SECTION_LIMIT),
+    getRecentOrders(RECENT_SECTION_LIMIT),
+    db.select().from(products).orderBy(desc(products.createdAt)).limit(RECENT_SECTION_LIMIT),
   ]);
 
   return (
@@ -82,12 +100,33 @@ export default async function AdminDashboardPage() {
 
       <section className="mb-14">
         <h2 className="font-serif text-2xl mb-4">Recent orders</h2>
-        <div className="border border-dashed border-taupe/40 rounded-brand p-8 text-center">
-          <p className="text-taupe">
-            Order history arrives with checkout in Phase 2 — nothing to show
-            yet.
-          </p>
-        </div>
+        {recentOrders.length === 0 ? (
+          <div className="border border-dashed border-taupe/40 rounded-brand p-8 text-center">
+            <p className="text-taupe">
+              Order history arrives with checkout in Phase 2 — nothing to show
+              yet.
+            </p>
+          </div>
+        ) : (
+          <div className="border border-taupe/20 rounded-brand divide-y divide-taupe/20 overflow-hidden">
+            {recentOrders.map((order) => (
+              <div key={order.id} className="py-4 px-4 flex items-center justify-between gap-4 transition-colors duration-150 hover:bg-taupe/5">
+                <div>
+                  <p className="font-serif">{order.buyerName}</p>
+                  <p className="text-xs text-taupe mt-1">
+                    {order.buyerEmail} · {new Date(order.createdAt).toLocaleDateString()}
+                  </p>
+                </div>
+                <div className="text-right shrink-0">
+                  <p className="text-sm">{formatPrice(order.totalAmount)}</p>
+                  <span className="text-xs border border-taupe/40 rounded-brand px-3 py-1.5 inline-block mt-1">
+                    {orderStatusLabels[order.status] ?? order.status}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </section>
 
       <section className="mb-14">

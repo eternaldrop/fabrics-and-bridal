@@ -5,8 +5,9 @@ import { ProductGallery } from "@/components/catalog/product-gallery";
 import { YardageAddToCart } from "@/components/catalog/yardage-add-to-cart";
 import { RelatedProducts } from "@/components/catalog/related-products";
 import { Button } from "@/components/ui/button";
-import { formatPrice } from "@/lib/format";
+import { formatPrice, isOnSale, discountPercent, effectivePrice } from "@/lib/format";
 import { getSwatchColor } from "@/lib/color-swatch";
+import { SaleBadge } from "@/components/catalog/sale-badge";
 import { Reveal } from "@/components/ui/reveal";
 
 export default async function FabricDetailPage({
@@ -22,6 +23,7 @@ export default async function FabricDetailPage({
   const { product, images, variants } = result;
   const colorVariants = variants.filter((v) => v.attributeName === "color");
   const swatch = getSwatchColor(product.color);
+  const onSale = isOnSale(product.price, product.salePrice);
 
   const related = await getRelatedProducts({
     id: product.id,
@@ -48,7 +50,15 @@ export default async function FabricDetailPage({
             <p className="text-xs text-taupe uppercase tracking-wide">{product.category}</p>
           )}
           <h1 className="font-serif text-3xl md:text-4xl mt-2">{product.name}</h1>
-          <p className="text-xl text-ink mt-3">{formatPrice(product.price)} / yard</p>
+          {onSale ? (
+            <div className="flex items-center gap-3 mt-3">
+              <p className="text-xl text-blush">{formatPrice(product.salePrice!)} / yard</p>
+              <p className="text-base text-taupe line-through">{formatPrice(product.price)}</p>
+              <SaleBadge percent={discountPercent(product.price, product.salePrice!)} />
+            </div>
+          ) : (
+            <p className="text-xl text-ink mt-3">{formatPrice(product.price)} / yard</p>
+          )}
           <p className="text-sm text-taupe mt-1">
             {product.stockQuantity && product.stockQuantity > 0
               ? `${product.stockQuantity} yards in stock`
@@ -96,7 +106,7 @@ export default async function FabricDetailPage({
                 productId: product.id,
                 slug: product.slug,
                 name: product.name,
-                price: product.price,
+                price: effectivePrice(product.price, product.salePrice),
                 type: "fabric",
                 coverImagePublicId: images[0]?.cloudinaryPublicId,
               }}

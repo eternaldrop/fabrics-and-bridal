@@ -1,4 +1,4 @@
-import { and, asc, count, desc, eq, gte, lte, ne, or, ilike, inArray, notInArray, SQL } from "drizzle-orm";
+import { and, asc, count, desc, eq, gte, isNotNull, isNull, lte, ne, or, ilike, inArray, notInArray, SQL } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { products, productImages, productVariants } from "@/db/schema";
 
@@ -154,6 +154,7 @@ export async function getRelatedProducts(
     slug: item.slug,
     name: item.name,
     price: item.price,
+    salePrice: item.salePrice,
     type: item.type,
     coverImagePublicId: coverByProduct.get(item.id),
   }));
@@ -186,9 +187,8 @@ export async function getPopularFabrics(limit = 5) {
 }
 
 // For the admin Fabrics/Outfits pages — one type's items, newest first,
-// 2 per page (tables in the admin app paginate as soon as there's more
-// than 2 rows), each with its cover (position-0) image.
-export const ADMIN_TABLE_PAGE_SIZE = 2;
+// 10 per page, each with its cover (position-0) image.
+export const ADMIN_TABLE_PAGE_SIZE = 10;
 
 export async function getAdminProductList(type: "fabric" | "outfit", page = 1) {
   const currentPage = Math.max(1, page);
@@ -235,7 +235,10 @@ export async function getAdminProductList(type: "fabric" | "outfit", page = 1) {
       name: item.name,
       type: item.type,
       category: item.category,
+      color: item.color,
+      material: item.material,
       price: item.price,
+      salePrice: item.salePrice,
       stockQuantity: item.stockQuantity,
       coverImagePublicId: coverByProduct.get(item.id),
     })),
@@ -247,9 +250,39 @@ interface AdminProductRow {
   name: string;
   type: "fabric" | "outfit";
   category: string | null;
+  color: string | null;
+  material: string | null;
   price: string;
+  salePrice: string | null;
   stockQuantity: number | null;
   coverImagePublicId?: string;
+}
+
+// Small header stats for the admin Fabrics/Outfits pages.
+export async function getAdminProductStats(type: "fabric" | "outfit") {
+  const [[{ total }], [{ madeToOrder }], [{ onSale }], categories] = await Promise.all([
+    db.select({ total: count() }).from(products).where(eq(products.type, type)),
+    db
+      .select({ madeToOrder: count() })
+      .from(products)
+      .where(and(eq(products.type, type), isNull(products.stockQuantity))),
+    db
+      .select({ onSale: count() })
+      .from(products)
+      .where(and(eq(products.type, type), isNotNull(products.salePrice))),
+    db
+      .selectDistinct({ category: products.category })
+      .from(products)
+      .where(eq(products.type, type)),
+  ]);
+
+  return {
+    total,
+    madeToOrder,
+    inStock: total - madeToOrder,
+    onSale,
+    categoryCount: categories.filter((c) => c.category).length,
+  };
 }
 
 export async function getDistinctValues(type: "fabric" | "outfit") {

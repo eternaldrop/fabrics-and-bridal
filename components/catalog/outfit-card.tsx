@@ -1,8 +1,9 @@
 import Link from "next/link";
 import Image from "next/image";
 import { cloudinaryUrl } from "@/lib/cloudinary-url";
-import { formatPrice } from "@/lib/format";
+import { formatPrice, isOnSale, discountPercent } from "@/lib/format";
 import { getSwatchColor } from "@/lib/color-swatch";
+import { SaleBadge } from "@/components/catalog/sale-badge";
 
 export interface OutfitCardData {
   slug: string;
@@ -10,15 +11,20 @@ export interface OutfitCardData {
   material: string | null;
   color: string | null;
   price: string;
+  salePrice?: string | null;
   coverImagePublicId?: string | null;
 }
 
 export function OutfitCard({ product, span = "normal" }: { product: OutfitCardData; span?: "normal" | "wide" }) {
   const swatch = getSwatchColor(product.color);
+  const onSale = isOnSale(product.price, product.salePrice);
 
   return (
     <Link href={`/catalog/outfits/${product.slug}`} className={`group block ${span === "wide" ? "md:col-span-2" : ""}`}>
       <div className="relative w-full aspect-[4/5] bg-taupe/10 border border-taupe/20 overflow-hidden transition-shadow duration-300 group-hover:shadow-lg">
+        {onSale && (
+          <SaleBadge percent={discountPercent(product.price, product.salePrice!)} className="absolute top-2 left-2 z-10" />
+        )}
         {product.coverImagePublicId ? (
           <Image
             src={cloudinaryUrl(product.coverImagePublicId, { width: 800 })}
@@ -37,7 +43,14 @@ export function OutfitCard({ product, span = "normal" }: { product: OutfitCardDa
       <div className="mt-3">
         <div className="flex items-baseline justify-between gap-2">
           <p className="font-serif text-lg leading-tight transition-colors duration-150 group-hover:text-blush">{product.name}</p>
-          <p className="text-sm text-ink whitespace-nowrap">{formatPrice(product.price)}</p>
+          {onSale ? (
+            <span className="text-right whitespace-nowrap">
+              <span className="text-sm text-blush">{formatPrice(product.salePrice!)}</span>{" "}
+              <span className="text-xs text-taupe line-through">{formatPrice(product.price)}</span>
+            </span>
+          ) : (
+            <p className="text-sm text-ink whitespace-nowrap">{formatPrice(product.price)}</p>
+          )}
         </div>
         {(product.material || product.color) && (
           <div className="flex items-center gap-1.5 mt-1 text-xs text-taupe">

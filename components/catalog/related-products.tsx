@@ -1,13 +1,14 @@
 import Link from "next/link";
 import Image from "next/image";
 import { cloudinaryUrl } from "@/lib/cloudinary-url";
-import { formatPrice } from "@/lib/format";
+import { formatPrice, isOnSale } from "@/lib/format";
 import { Reveal } from "@/components/ui/reveal";
 
 export interface RelatedProduct {
   slug: string;
   name: string;
   price: string;
+  salePrice?: string | null;
   type: "fabric" | "outfit";
   coverImagePublicId?: string;
 }
@@ -43,7 +44,14 @@ export function RelatedProducts({ title = "Goes well with", items }: { title?: s
                 )}
               </div>
               <p className="font-serif text-sm mt-2 leading-tight transition-colors duration-150 group-hover:text-blush">{item.name}</p>
-              <p className="text-xs text-taupe mt-0.5">{formatPrice(item.price)}</p>
+              {isOnSale(item.price, item.salePrice) ? (
+                <p className="text-xs mt-0.5">
+                  <span className="text-blush">{formatPrice(item.salePrice!)}</span>{" "}
+                  <span className="text-taupe line-through">{formatPrice(item.price)}</span>
+                </p>
+              ) : (
+                <p className="text-xs text-taupe mt-0.5">{formatPrice(item.price)}</p>
+              )}
             </Link>
           ))}
         </div>

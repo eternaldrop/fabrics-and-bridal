@@ -12,9 +12,8 @@ export async function getRecentConsultations(limit = 5) {
 }
 
 // For the admin Consultations page — every request a bride has submitted
-// through the bridal consultation form, newest first, 2 per page (tables
-// in the admin app paginate as soon as there's more than 2 rows).
-export const ADMIN_TABLE_PAGE_SIZE = 2;
+// through the bridal consultation form, newest first, 10 per page.
+export const ADMIN_TABLE_PAGE_SIZE = 10;
 
 export async function getConsultationsPage(page = 1) {
   const currentPage = Math.max(1, page);
@@ -35,6 +34,24 @@ export async function getConsultationsPage(page = 1) {
     pageSize: ADMIN_TABLE_PAGE_SIZE,
     total,
     totalPages: Math.max(1, Math.ceil(total / ADMIN_TABLE_PAGE_SIZE)),
+  };
+}
+
+export async function getConsultationStatusCounts() {
+  const rows = await db
+    .select({ status: bridalConsultations.status, total: count() })
+    .from(bridalConsultations)
+    .groupBy(bridalConsultations.status);
+
+  const counts = { requested: 0, responded: 0, ongoing: 0, finished: 0 };
+  for (const row of rows) counts[row.status] = row.total;
+
+  return {
+    total: rows.reduce((sum, row) => sum + row.total, 0),
+    requested: counts.requested,
+    responded: counts.responded,
+    ongoing: counts.ongoing,
+    finished: counts.finished,
   };
 }
 

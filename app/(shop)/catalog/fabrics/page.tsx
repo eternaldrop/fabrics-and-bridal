@@ -100,6 +100,7 @@ export default async function FabricsPage({
                       material: item.material,
                       color: item.color,
                       price: item.price,
+                      salePrice: item.salePrice,
                       coverImagePublicId: coverByProduct.get(item.id),
                     }}
                   />
