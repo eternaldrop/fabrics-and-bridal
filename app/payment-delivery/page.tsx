@@ -1,10 +1,12 @@
 import { Container } from "@/components/ui/container";
+import { Reveal } from "@/components/ui/reveal";
 
 export const metadata = { title: "Payment & Delivery — Fabrics & Bridals" };
 
 export default function PaymentDeliveryPage() {
   return (
     <Container className="py-16 max-w-2xl">
+      <Reveal>
       <h1 className="font-serif text-4xl mb-10">Payment &amp; delivery</h1>
 
       <section className="mb-10">
@@ -44,6 +46,7 @@ export default function PaymentDeliveryPage() {
         in your actual shipping partner, timelines, and rates before
         launch.
       </p>
+      </Reveal>
     </Container>
   );
 }

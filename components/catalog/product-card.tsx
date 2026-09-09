@@ -20,14 +20,14 @@ export function ProductCard({ product, span = "normal" }: { product: ProductCard
       href={href}
       className={`group block ${span === "wide" ? "md:col-span-2" : ""}`}
     >
-      <div className="relative w-full aspect-[4/5] bg-taupe/10 border border-taupe/20 overflow-hidden">
+      <div className="relative w-full aspect-[4/5] bg-taupe/10 border border-taupe/20 overflow-hidden transition-shadow duration-300 group-hover:shadow-lg">
         {product.coverImagePublicId ? (
           <Image
             src={cloudinaryUrl(product.coverImagePublicId, { width: 800 })}
             alt={product.name}
             fill
             loading="lazy"
-            className="object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+            className="object-cover transition-transform duration-300 group-hover:scale-[1.05]"
             sizes="(min-width: 768px) 33vw, 50vw"
           />
         ) : (
@@ -38,7 +38,7 @@ export function ProductCard({ product, span = "normal" }: { product: ProductCard
       </div>
       <div className="mt-3 flex items-baseline justify-between gap-2">
         <div>
-          <p className="font-serif text-lg leading-tight">{product.name}</p>
+          <p className="font-serif text-lg leading-tight transition-colors duration-150 group-hover:text-blush">{product.name}</p>
           {product.category && (
             <p className="text-xs text-taupe mt-1">{product.category}</p>
           )}

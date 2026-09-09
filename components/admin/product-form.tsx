@@ -7,33 +7,116 @@ import Image from "next/image";
 import { Label, Input, Textarea, Select } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { cloudinaryUrl } from "@/lib/cloudinary-url";
-import { FABRIC_CATEGORIES, FABRIC_MATERIALS } from "@/lib/taxonomy";
+import { FABRIC_CATEGORIES, FABRIC_MATERIALS, OUTFIT_CATEGORIES, OUTFIT_SIZES } from "@/lib/taxonomy";
 
 type ProductType = "fabric" | "outfit";
 
-export function ProductForm() {
+function PhotoSlot({
+  label,
+  optional,
+  value,
+  onChange,
+  uploadPreset,
+}: {
+  label: string;
+  optional?: boolean;
+  value: string | null;
+  onChange: (id: string | null) => void;
+  uploadPreset?: string;
+}) {
+  return (
+    <div>
+      {/* Fluid sizing throughout (no fixed px widths) — this sits in a
+          3-column grid that can get quite narrow on small phones, and a
+          fixed-width box there would overflow its column and push the
+          page into horizontal scroll. */}
+      <p className="text-xs text-taupe mb-2">
+        {label}
+        {optional && <span className="text-taupe/70"> (optional)</span>}
+      </p>
+      {value ? (
+        <div className="relative w-full aspect-[4/5] border border-taupe/30 overflow-hidden">
+          <Image
+            src={cloudinaryUrl(value, { width: 200 })}
+            alt={label}
+            fill
+            sizes="(min-width: 768px) 120px, 30vw"
+            className="object-cover"
+          />
+          <button
+            type="button"
+            onClick={() => onChange(null)}
+            className="absolute top-1 right-1 bg-ink/80 text-cream text-xs rounded-full w-5 h-5 flex items-center justify-center leading-none transition-transform duration-150 hover:scale-110 active:scale-90"
+            aria-label={`Remove ${label.toLowerCase()}`}
+          >
+            ×
+          </button>
+        </div>
+      ) : uploadPreset ? (
+        <CldUploadWidget
+          uploadPreset={uploadPreset}
+          options={{ multiple: false, maxFiles: 1 }}
+          onSuccess={(result) => {
+            const info = result.info;
+            if (info && typeof info === "object" && "public_id" in info) {
+              onChange((info as { public_id: string }).public_id);
+            }
+          }}
+        >
+          {({ open }) => (
+            <button
+              type="button"
+              onClick={() => open()}
+              className="w-full aspect-[4/5] border border-dashed border-taupe/40 rounded-brand flex items-center justify-center text-xs text-taupe transition-colors duration-150 hover:border-ink hover:text-ink"
+            >
+              Upload
+            </button>
+          )}
+        </CldUploadWidget>
+      ) : (
+        <p className="text-xs text-blush">
+          Cloudinary preset not configured.
+        </p>
+      )}
+    </div>
+  );
+}
+
+export function ProductForm({ fixedType }: { fixedType?: ProductType } = {}) {
   const router = useRouter();
-  const [type, setType] = useState<ProductType>("fabric");
-  const [images, setImages] = useState<string[]>([]);
+  const [type, setType] = useState<ProductType>(fixedType ?? "fabric");
+  // Every product uses three fixed photo slots — the item itself, plus up
+  // to two optional style shots — so the gallery on its detail page always
+  // has exactly 3 images to work with. Position 0 in productImages is
+  // always the main photo, so the submitted `images` array is built as
+  // [main, style1, style2].
+  const [mainImage, setMainImage] = useState<string | null>(null);
+  const [styleImage1, setStyleImage1] = useState<string | null>(null);
+  const [styleImage2, setStyleImage2] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+
+  const submittedImages = [mainImage, styleImage1, styleImage2].filter(
+    (id): id is string => Boolean(id)
+  );
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(null);
     setSuccess(false);
 
-    if (images.length === 0) {
-      setError("Upload at least one photo before saving.");
+    if (submittedImages.length === 0) {
+      setError(
+        type === "fabric"
+          ? "Upload a main fabric photo before saving."
+          : "Upload a main photo before saving."
+      );
       return;
     }
 
     const form = new FormData(e.currentTarget);
-    const sizes = String(form.get("sizes") ?? "")
-      .split(",")
-      .map((s) => s.trim())
-      .filter(Boolean);
+    const sizes = form.getAll("sizes").map(String);
     const colorVariants = String(form.get("colorVariants") ?? "")
       .split(",")
       .map((s) => s.trim())
@@ -48,14 +131,16 @@ export function ProductForm() {
       name: form.get("name"),
       description: form.get("description") || undefined,
       category: form.get("category") || undefined,
-      material: type === "fabric" ? form.get("material") || undefined : undefined,
+      material: form.get("material") || undefined,
       color: form.get("color") || undefined,
       occasion: form.get("occasion") || undefined,
+      width: type === "fabric" ? form.get("width") || undefined : undefined,
+      careInstructions: type === "fabric" ? form.get("careInstructions") || undefined : undefined,
       price: form.get("price"),
       isCustomOrderable: form.get("isCustomOrderable") === "on",
       stockQuantity: form.get("stockQuantity") || undefined,
       tags,
-      images,
+      images: submittedImages,
       sizes: type === "outfit" ? sizes : [],
       colorVariants,
     };
@@ -75,7 +160,9 @@ export function ProductForm() {
     }
 
     setSuccess(true);
-    setImages([]);
+    setMainImage(null);
+    setStyleImage1(null);
+    setStyleImage2(null);
     e.currentTarget.reset();
     router.refresh();
   }
@@ -84,26 +171,30 @@ export function ProductForm() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6 border border-taupe/30 rounded-brand p-6">
-      <div className="flex gap-6">
-        <label className="flex items-center gap-2 text-sm">
-          <input
-            type="radio"
-            name="type-select"
-            checked={type === "fabric"}
-            onChange={() => setType("fabric")}
-          />
-          Fabric
-        </label>
-        <label className="flex items-center gap-2 text-sm">
-          <input
-            type="radio"
-            name="type-select"
-            checked={type === "outfit"}
-            onChange={() => setType("outfit")}
-          />
-          Outfit
-        </label>
-      </div>
+      {!fixedType && (
+        <div className="flex gap-6">
+          <label className="flex items-center gap-2 text-sm cursor-pointer transition-colors duration-150 hover:text-blush">
+            <input
+              type="radio"
+              name="type-select"
+              checked={type === "fabric"}
+              onChange={() => setType("fabric")}
+              className="accent-ink transition-transform duration-150 active:scale-90"
+            />
+            Fabric
+          </label>
+          <label className="flex items-center gap-2 text-sm cursor-pointer transition-colors duration-150 hover:text-blush">
+            <input
+              type="radio"
+              name="type-select"
+              checked={type === "outfit"}
+              onChange={() => setType("outfit")}
+              className="accent-ink transition-transform duration-150 active:scale-90"
+            />
+            Outfit
+          </label>
+        </div>
+      )}
 
       <div>
         <Label htmlFor="name">Name</Label>
@@ -118,20 +209,16 @@ export function ProductForm() {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <Label htmlFor="category">Category</Label>
-          {type === "fabric" ? (
-            <Select id="category" name="category" defaultValue="" required>
-              <option value="" disabled>
-                Choose a category
+          <Select id="category" name="category" defaultValue="" required>
+            <option value="" disabled>
+              Choose a category
+            </option>
+            {(type === "fabric" ? FABRIC_CATEGORIES : OUTFIT_CATEGORIES).map((c) => (
+              <option key={c} value={c}>
+                {c}
               </option>
-              {FABRIC_CATEGORIES.map((c) => (
-                <option key={c} value={c}>
-                  {c}
-                </option>
-              ))}
-            </Select>
-          ) : (
-            <Input id="category" name="category" placeholder="e.g. bridal, aso-ebi, casual" />
-          )}
+            ))}
+          </Select>
         </div>
         <div>
           <Label htmlFor="color">Color</Label>
@@ -162,12 +249,39 @@ export function ProductForm() {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <Label htmlFor="sizes">Sizes (comma-separated)</Label>
-            <Input id="sizes" name="sizes" placeholder="S, M, L, XL" />
+            <Label htmlFor="material">Material</Label>
+            <Input id="material" name="material" placeholder="e.g. Silk satin, Ankara cotton" />
           </div>
           <div>
             <Label htmlFor="price">Price</Label>
             <Input id="price" name="price" type="number" step="0.01" min="0" required />
+          </div>
+        </div>
+      )}
+
+      {type === "outfit" && (
+        <div>
+          <Label>Available sizes</Label>
+          <div className="flex flex-wrap gap-4">
+            {OUTFIT_SIZES.map((size) => (
+              <label key={size} className="flex items-center gap-2 text-sm cursor-pointer transition-colors duration-150 hover:text-blush">
+                <input type="checkbox" name="sizes" value={size} className="accent-ink transition-transform duration-150 active:scale-90" />
+                {size}
+              </label>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {type === "fabric" && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <Label htmlFor="width">Width</Label>
+            <Input id="width" name="width" placeholder="e.g. 58 inches" />
+          </div>
+          <div>
+            <Label htmlFor="careInstructions">Care instructions</Label>
+            <Input id="careInstructions" name="careInstructions" placeholder="e.g. Dry clean only" />
           </div>
         </div>
       )}
@@ -195,56 +309,52 @@ export function ProductForm() {
         <Input id="tags" name="tags" placeholder="lace, bridal, floral" />
       </div>
 
-      <label className="flex items-center gap-2 text-sm">
-        <input type="checkbox" name="isCustomOrderable" />
+      <label className="flex items-center gap-2 text-sm cursor-pointer transition-colors duration-150 hover:text-blush">
+        <input type="checkbox" name="isCustomOrderable" className="accent-ink transition-transform duration-150 active:scale-90" />
         Available for custom / made-to-order requests
       </label>
 
       <div>
         <Label>Photos</Label>
-        {uploadPreset ? (
-          <CldUploadWidget
+        <p className="text-sm text-taupe mb-3">
+          One main photo, plus up to two optional style shots — these are
+          the exact 3 images customers see in the gallery on its detail
+          page.
+        </p>
+        <div className="grid grid-cols-3 gap-4">
+          <PhotoSlot
+            label={type === "fabric" ? "Main fabric photo" : "Main photo"}
+            value={mainImage}
+            onChange={setMainImage}
             uploadPreset={uploadPreset}
-            options={{ multiple: true, maxFiles: 6 }}
-            onSuccess={(result) => {
-              const info = result.info;
-              if (info && typeof info === "object" && "public_id" in info) {
-                setImages((prev) => [...prev, (info as { public_id: string }).public_id]);
-              }
-            }}
-          >
-            {({ open }) => (
-              <Button type="button" variant="ghost" onClick={() => open()}>
-                Upload photos
-              </Button>
-            )}
-          </CldUploadWidget>
-        ) : (
-          <p className="text-sm text-blush">
+          />
+          <PhotoSlot
+            label="Style photo 1"
+            optional
+            value={styleImage1}
+            onChange={setStyleImage1}
+            uploadPreset={uploadPreset}
+          />
+          <PhotoSlot
+            label="Style photo 2"
+            optional
+            value={styleImage2}
+            onChange={setStyleImage2}
+            uploadPreset={uploadPreset}
+          />
+        </div>
+        {!uploadPreset && (
+          <p className="text-sm text-blush mt-3">
             Cloudinary upload preset isn&apos;t configured yet — add
             NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET to .env.local.
           </p>
         )}
-
-        {images.length > 0 && (
-          <div className="flex gap-3 mt-4 flex-wrap">
-            {images.map((publicId) => (
-              <div key={publicId} className="relative w-20 h-24 border border-taupe/30">
-                <Image
-                  src={cloudinaryUrl(publicId, { width: 160 })}
-                  alt="Uploaded preview"
-                  fill
-                  sizes="80px"
-                  className="object-cover"
-                />
-              </div>
-            ))}
-          </div>
-        )}
       </div>
 
-      {error && <p className="text-sm text-blush">{error}</p>}
-      {success && <p className="text-sm text-ink">Saved. It now appears in the catalog.</p>}
+      {error && <p key={error} className="animate-shake text-sm text-blush">{error}</p>}
+      {success && (
+        <p className="animate-bounce-pop text-sm text-ink">Saved. It now appears in the catalog.</p>
+      )}
 
       <Button type="submit" disabled={submitting}>
         {submitting ? "Saving..." : "Save item"}

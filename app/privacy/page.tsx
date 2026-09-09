@@ -1,10 +1,12 @@
 import { Container } from "@/components/ui/container";
+import { Reveal } from "@/components/ui/reveal";
 
 export const metadata = { title: "Privacy Policy — Fabrics & Bridals" };
 
 export default function PrivacyPage() {
   return (
     <Container className="py-16 max-w-2xl">
+      <Reveal>
       <h1 className="font-serif text-4xl mb-2">Privacy policy</h1>
       <p className="text-taupe text-sm mb-10">Last updated: September 4, 2026</p>
 
@@ -58,7 +60,7 @@ export default function PrivacyPage() {
           <h2 className="font-serif text-xl text-ink mb-2">6. Contact</h2>
           <p>
             Questions about this policy?{" "}
-            <a href="/contact" className="underline decoration-taupe underline-offset-4 hover:text-blush">
+            <a href="/contact" className="link-underline hover:text-blush transition-colors">
               Contact us
             </a>
             .
@@ -71,6 +73,7 @@ export default function PrivacyPage() {
         lawyer review and adapt it to your business and applicable data
         protection law before launch.
       </p>
+      </Reveal>
     </Container>
   );
 }

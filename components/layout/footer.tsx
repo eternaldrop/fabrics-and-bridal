@@ -56,7 +56,7 @@ export function Footer() {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={label}
-                  className="text-taupe hover:text-blush transition-colors"
+                  className="text-taupe hover:text-blush transition-[color,transform] duration-150 hover:scale-125 active:scale-95 inline-block"
                 >
                   <Icon className="w-5 h-5" />
                 </a>
@@ -70,7 +70,7 @@ export function Footer() {
               <ul className="space-y-2">
                 {col.links.map((link) => (
                   <li key={link.href}>
-                    <Link href={link.href} className="text-sm text-taupe hover:text-ink">
+                    <Link href={link.href} className="link-underline text-sm text-taupe hover:text-ink transition-colors duration-150 w-fit inline-block">
                       {link.label}
                     </Link>
                   </li>

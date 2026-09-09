@@ -1,40 +1,35 @@
-import Image from "next/image";
 import { LinkButton } from "@/components/ui/button";
 import { Container } from "@/components/ui/container";
 import { ProductShelf } from "@/components/catalog/product-shelf";
+import { FaqSection } from "@/components/marketing/faq-section";
+import { MoodBoardPalette } from "@/components/bridal/mood-board-palette";
+import { Reveal } from "@/components/ui/reveal";
 import { HeroCarousel } from "@/components/marketing/hero-carousel";
 import { heroCarouselSlides } from "@/components/marketing/hero-carousel-data";
-import { getPopularFabrics, getNewArrivals, getLuxuryFabrics, getBridalFabrics } from "@/lib/products";
+import { getNewArrivals } from "@/lib/products";
+import { getFeaturedSampleMoodBoard } from "@/lib/mood-boards";
 import { db } from "@/lib/db";
 import { productImages } from "@/db/schema";
 import { asc, inArray } from "drizzle-orm";
-import { cloudinaryUrl } from "@/lib/cloudinary-url";
 import Link from "next/link";
 
-const MOODBOARD_IMAGE_ID = "fabrics-and-bridals/site/moodboard-preview";
-
 export default async function HomePage() {
-  const [popular, newArrivals, luxury, bridal] = await Promise.all([
-    getPopularFabrics(),
-    getNewArrivals("fabric"),
-    getLuxuryFabrics(),
-    getBridalFabrics(),
+  const [newArrivals, sampleBoard] = await Promise.all([
+    getNewArrivals("fabric", 4),
+    getFeaturedSampleMoodBoard(),
   ]);
 
-  const allIds = [...popular, ...newArrivals, ...luxury, ...bridal].map((p) => p.id);
   const coverByProduct = new Map<string, string>();
-  if (allIds.length > 0) {
+  if (newArrivals.length > 0) {
     const images = await db
       .select()
       .from(productImages)
-      .where(inArray(productImages.productId, Array.from(new Set(allIds))))
+      .where(inArray(productImages.productId, newArrivals.map((p) => p.id)))
       .orderBy(asc(productImages.position));
     for (const img of images) {
       if (!coverByProduct.has(img.productId)) coverByProduct.set(img.productId, img.cloudinaryPublicId);
     }
   }
-
-  const catalogIsEmpty = popular.length === 0 && newArrivals.length === 0;
 
   return (
     <div>
@@ -58,8 +53,9 @@ export default async function HomePage() {
         </Container>
       </div>
 
+      {/* New in the fabric room */}
       <Container>
-        {catalogIsEmpty ? (
+        {newArrivals.length === 0 ? (
           <div className="py-20">
             <div className="border border-dashed border-taupe/40 rounded-brand p-10 text-center">
               <p className="text-taupe">
@@ -67,7 +63,7 @@ export default async function HomePage() {
                 from the admin dashboard, they&apos;ll appear here.
               </p>
               <Link
-                href="/admin/products"
+                href="/admin/products/fabrics"
                 className="inline-block mt-4 text-sm text-ink underline decoration-taupe underline-offset-4 hover:text-blush"
               >
                 Go to admin upload tool
@@ -75,16 +71,15 @@ export default async function HomePage() {
             </div>
           </div>
         ) : (
-          <div className="pt-14">
-            <ProductShelf title="Popular Fabrics" viewAllHref="/catalog/fabrics" products={popular} coverByProduct={coverByProduct} />
-            <ProductShelf title="New Arrivals" viewAllHref="/catalog/fabrics" products={newArrivals} coverByProduct={coverByProduct} />
-            <ProductShelf title="Luxury Fabrics" viewAllHref="/catalog/fabrics" products={luxury} coverByProduct={coverByProduct} />
-            <ProductShelf
-              title="Bridal Fabrics"
-              viewAllHref="/catalog/fabrics?category=Bridal+Fabrics"
-              products={bridal}
-              coverByProduct={coverByProduct}
-            />
+          <div className="pt-16">
+            <Reveal>
+              <ProductShelf
+                title="New in the fabric room"
+                viewAllHref="/catalog/fabrics"
+                products={newArrivals}
+                coverByProduct={coverByProduct}
+              />
+            </Reveal>
           </div>
         )}
       </Container>
@@ -92,7 +87,7 @@ export default async function HomePage() {
       {/* Bridal consultation teaser */}
       <section className="py-20 border-t border-taupe/30 mt-6">
         <Container className="grid md:grid-cols-2 gap-10 items-center">
-          <div>
+          <Reveal>
             <h2 className="font-serif text-2xl md:text-3xl mb-4">
               Planning a wedding? Let&apos;s find your palette.
             </h2>
@@ -100,28 +95,41 @@ export default async function HomePage() {
               Tell us about your wedding date, venue, and style inspiration,
               and we&apos;ll put together a personal mood board — fabric
               swatches, colors, and outfit ideas — for you to review and
-              approve.
+              approve. Completely free, no obligation to order.
             </p>
             <LinkButton href="/bridal" variant="secondary" className="mt-6">
-              Start a consultation
+              Book your free consultation
             </LinkButton>
-          </div>
-          <div>
-            <div className="relative h-80 border border-taupe/30 rounded-brand overflow-hidden">
-              <Image
-                src={cloudinaryUrl(MOODBOARD_IMAGE_ID, { width: 1000 })}
-                alt="Blush peony — an example of a wedding color palette starting point"
-                fill
-                sizes="(min-width: 768px) 40vw, 100vw"
-                className="object-cover"
-              />
-            </div>
-            <p className="text-[11px] text-taupe mt-2">
-              Photo: &quot;Peony Blush&quot; by Angel Lite Photography, Public Domain Mark 1.0
-            </p>
-          </div>
+          </Reveal>
+
+          {sampleBoard && (
+            <Reveal delay={150} className="border border-taupe/20 rounded-brand p-6 transition-shadow duration-300 hover:shadow-lg">
+              <p className="text-xs text-taupe uppercase tracking-wide">A sample palette</p>
+              <p className="font-serif text-xl mt-1">{sampleBoard.title}</p>
+              {sampleBoard.styleDescriptor && (
+                <p className="text-sm text-taupe mt-1">{sampleBoard.styleDescriptor}</p>
+              )}
+              {sampleBoard.colorPalette.length > 0 && (
+                <div className="mt-5">
+                  <MoodBoardPalette palette={sampleBoard.colorPalette} size="sm" />
+                </div>
+              )}
+              <Link
+                href="/bridal/sample-mood-board"
+                className="link-underline inline-block mt-5 text-sm text-ink hover:text-blush transition-colors"
+              >
+                See a real mood board →
+              </Link>
+            </Reveal>
+          )}
         </Container>
       </section>
+
+      <Container>
+        <Reveal>
+          <FaqSection />
+        </Reveal>
+      </Container>
     </div>
   );
 }

@@ -4,14 +4,18 @@ import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 import Link from "next/link";
-import { Container } from "@/components/ui/container";
+import Image from "next/image";
 import { Label, Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Reveal } from "@/components/ui/reveal";
+import { cloudinaryUrl } from "@/lib/cloudinary-url";
+
+const HERO_IMAGE_ID = "fabrics-and-bridals/site/hero-fabric-rolls";
 
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get("callbackUrl") ?? "/";
+  const callbackUrl = searchParams.get("callbackUrl") ?? "/admin";
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -63,7 +67,7 @@ function LoginForm() {
         />
       </div>
 
-      {error && <p className="text-sm text-blush">{error}</p>}
+      {error && <p key={error} className="animate-shake text-sm text-blush">{error}</p>}
 
       <Button type="submit" disabled={loading} className="w-full">
         {loading ? "Logging in..." : "Log in"}
@@ -74,22 +78,56 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <Container className="py-20 max-w-md">
-      <h1 className="font-serif text-3xl mb-2">Welcome back</h1>
-      <p className="text-taupe mb-8">
-        Log in to track your orders or continue your bridal consultation.
-      </p>
+    <div className="min-h-screen grid md:grid-cols-2 bg-cream">
+      {/* Branding panel — desktop only */}
+      <div className="hidden md:block relative bg-ink overflow-hidden">
+        <Image
+          src={cloudinaryUrl(HERO_IMAGE_ID, { width: 1400 })}
+          alt="Rolls of fabric"
+          fill
+          priority
+          sizes="50vw"
+          className="object-cover opacity-70"
+        />
+        <div className="absolute inset-0 bg-ink/40" />
+        <div className="relative h-full flex flex-col justify-between p-12">
+          <Link href="/" className="font-serif text-2xl text-cream hover:text-rose transition-colors w-fit">
+            Fabrics &amp; Bridals
+          </Link>
+          <div>
+            <p className="font-serif text-3xl text-cream leading-snug max-w-sm">
+              Cloth chosen for you, cut to fit you.
+            </p>
+            <p className="text-cream/70 text-sm mt-3 max-w-sm">
+              Sign in to manage the catalog, review consultations, and keep
+              the shop running.
+            </p>
+          </div>
+        </div>
+      </div>
 
-      <Suspense fallback={null}>
-        <LoginForm />
-      </Suspense>
+      {/* Form panel */}
+      <div className="flex items-center justify-center p-6 py-16 md:py-6">
+        <Reveal className="w-full max-w-sm">
+          <p className="text-xs text-taupe uppercase tracking-wide mb-2">Admin</p>
+          <h1 className="font-serif text-3xl mb-2">Staff sign-in</h1>
+          <p className="text-taupe mb-8">
+            This login is for Fabrics &amp; Bridals staff. Shopping doesn&apos;t
+            require an account.
+          </p>
 
-      <p className="mt-6 text-sm text-taupe">
-        New here?{" "}
-        <Link href="/register" className="text-ink underline decoration-taupe underline-offset-4">
-          Create an account
-        </Link>
-      </p>
-    </Container>
+          <Suspense fallback={null}>
+            <LoginForm />
+          </Suspense>
+
+          <Link
+            href="/"
+            className="link-underline inline-block mt-8 text-sm text-taupe hover:text-ink transition-colors"
+          >
+            ← Back to the shop
+          </Link>
+        </Reveal>
+      </div>
+    </div>
   );
 }

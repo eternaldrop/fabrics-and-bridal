@@ -1,4 +1,5 @@
 import { Container } from "@/components/ui/container";
+import { Reveal } from "@/components/ui/reveal";
 
 export const metadata = { title: "FAQ — Fabrics & Bridals" };
 
@@ -12,8 +13,8 @@ const faqs = [
     a: "When you request a custom order, you'll be asked for your measurements — either entered directly or uploaded from a measurement guide. Your stylist confirms fit details before production begins.",
   },
   {
-    q: "What's the difference between a live and a written bridal consultation?",
-    a: "A live consultation is a scheduled call with a stylist. A written consultation is async — you share your preferences through the booking form and receive your mood board without needing to schedule a call.",
+    q: "Do I need an account to book a bridal consultation?",
+    a: "No — just fill in the guided form with your name and email, and your stylist follows up directly. No account required.",
   },
   {
     q: "Can I change my mood board after it's shared with me?",
@@ -21,7 +22,7 @@ const faqs = [
   },
   {
     q: "How long does a custom/made-to-order piece take?",
-    a: "Timelines vary by piece and current order volume. Your order status will move from Confirmed to In Production to Ready, and you can track it from your account at any time.",
+    a: "Timelines vary by piece and current order volume — custom cuts add about ten days on top of the usual turnaround.",
   },
   {
     q: "What payment methods do you accept?",
@@ -36,20 +37,26 @@ const faqs = [
 export default function FaqPage() {
   return (
     <Container className="py-16 max-w-2xl">
-      <h1 className="font-serif text-4xl mb-10">Frequently asked questions</h1>
+      <Reveal>
+        <h1 className="font-serif text-4xl mb-10">Frequently asked questions</h1>
+      </Reveal>
 
       <div className="divide-y divide-taupe/20">
-        {faqs.map((item) => (
-          <div key={item.q} className="py-6">
+        {faqs.map((item, i) => (
+          <Reveal
+            key={item.q}
+            delay={(i % 5) * 60}
+            className="py-6 transition-colors duration-200 hover:bg-taupe/5 rounded-brand px-2 -mx-2"
+          >
             <h2 className="font-serif text-lg mb-2">{item.q}</h2>
             <p className="text-sm text-ink/80">{item.a}</p>
-          </div>
+          </Reveal>
         ))}
       </div>
 
       <p className="text-sm text-taupe mt-10">
         Can&apos;t find what you&apos;re looking for?{" "}
-        <a href="/contact" className="underline decoration-taupe underline-offset-4 hover:text-blush">
+        <a href="/contact" className="link-underline hover:text-blush transition-colors">
           Contact us
         </a>
         .

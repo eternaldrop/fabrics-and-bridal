@@ -17,7 +17,20 @@
     "db:seed-mood-boards": "node --env-file=.env.local node_modules/tsx/dist/cli.mjs db/seed-mood-boards.ts",
     "db:seed-bridal-page-images": "node --env-file=.env.local node_modules/tsx/dist/cli.mjs db/seed-bridal-page-images.ts",
     "db:seed-outfits": "node --env-file=.env.local node_modules/tsx/dist/cli.mjs db/seed-outfits.ts",
-    "db:seed-more-fabrics": "node --env-file=.env.local node_modules/tsx/dist/cli.mjs db/seed-more-fabrics.ts"
+    "db:seed-more-fabrics": "node --env-file=.env.local node_modules/tsx/dist/cli.mjs db/seed-more-fabrics.ts",
+    "db:seed-fabric-photos": "node --env-file=.env.local node_modules/tsx/dist/cli.mjs db/seed-fabric-photos.ts",
+    "db:seed-homepage-hero": "node --env-file=.env.local node_modules/tsx/dist/cli.mjs db/seed-homepage-hero.ts",
+    "db:fix-outfit-data": "node --env-file=.env.local node_modules/tsx/dist/cli.mjs db/fix-outfit-data.ts",
+    "db:fix-fabric-thumbnails": "node --env-file=.env.local node_modules/tsx/dist/cli.mjs db/fix-fabric-thumbnails.ts",
+    "db:seed-new-outfit": "node --env-file=.env.local node_modules/tsx/dist/cli.mjs db/seed-new-outfit.ts",
+    "db:fix-outfit-thumbnails": "node --env-file=.env.local node_modules/tsx/dist/cli.mjs db/fix-outfit-thumbnails.ts",
+    "db:seed-bulk-demo-items": "node --env-file=.env.local node_modules/tsx/dist/cli.mjs db/seed-bulk-demo-items.ts",
+    "db:seed-sample-consultations": "node --env-file=.env.local node_modules/tsx/dist/cli.mjs db/seed-sample-consultations.ts",
+    "db:seed-more-outfits": "node --env-file=.env.local node_modules/tsx/dist/cli.mjs db/seed-more-outfits.ts",
+    "db:seed-new-outfits-2": "node --env-file=.env.local node_modules/tsx/dist/cli.mjs db/seed-new-outfits-2.ts",
+    "db:seed-hero-images": "node --env-file=.env.local node_modules/tsx/dist/cli.mjs db/seed-hero-images.ts",
+    "db:seed-outfit-final-images": "node --env-file=.env.local node_modules/tsx/dist/cli.mjs db/seed-outfit-final-images.ts",
+    "db:restore-fabric-images": "node --env-file=.env.local node_modules/tsx/dist/cli.mjs db/restore-fabric-images.ts"
   },
   "dependencies": {
     "@auth/drizzle-adapter": "^1.11.3",

@@ -1,27 +1,25 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { bridalConsultations } from "@/db/schema";
 
+// Guest-only, single-track intake: no live-vs-written call scheduling, just
+// a form that gets followed up by email — see app/api/consultations for the
+// insert. consultationType stays "async" (kept alive in the schema for the
+// admin dashboard's labeling, but never chosen by the bride here).
 const consultationSchema = z.object({
-  consultationType: z.enum(["live", "async"]),
-  preferredDate: z.string().optional(),
-  weddingDate: z.string().optional(),
-  venueType: z.string().optional(),
-  season: z.string().optional(),
-  budgetRange: z.string().optional(),
+  guestName: z.string().min(1, "Name is required"),
+  guestEmail: z.string().email("Enter a valid email"),
+  weddingDate: z.string().min(1, "Wedding date is required"),
+  venueType: z.string().min(1, "Venue type is required"),
+  weddingTheme: z.string().min(1, "Wedding theme is required"),
+  preferredColors: z.string().min(1, "Favourite colours are required"),
+  budgetRange: z.string().min(1, "Budget range is required"),
   styleInspiration: z.string().optional(),
-  preferredColors: z.string().optional(),
-  inspirationImagePublicIds: z.array(z.string()).default([]),
+  inspirationImagePublicIds: z.array(z.string()).max(3, "Up to 3 inspiration photos only").default([]),
 });
 
 export async function POST(request: Request) {
-  const session = await auth();
-  if (!session?.user) {
-    return NextResponse.json({ error: "Please log in to book a consultation." }, { status: 401 });
-  }
-
   const body = await request.json();
   const parsed = consultationSchema.safeParse(body);
 
@@ -37,16 +35,16 @@ export async function POST(request: Request) {
   const [consultation] = await db
     .insert(bridalConsultations)
     .values({
-      userId: session.user.id,
-      consultationType: data.consultationType,
-      preferredDate: data.preferredDate ? new Date(data.preferredDate) : undefined,
-      weddingDate: data.weddingDate || undefined,
-      venueType: data.venueType || undefined,
-      season: data.season || undefined,
-      budgetRange: data.budgetRange || undefined,
+      guestName: data.guestName,
+      guestEmail: data.guestEmail,
+      consultationType: "async",
+      weddingDate: data.weddingDate,
+      venueType: data.venueType,
+      weddingTheme: data.weddingTheme,
+      budgetRange: data.budgetRange,
       styleInspiration: data.styleInspiration || undefined,
       stylePreferences: {
-        preferredColors: data.preferredColors || undefined,
+        preferredColors: data.preferredColors,
         inspirationImagePublicIds: data.inspirationImagePublicIds,
       },
       status: "requested",

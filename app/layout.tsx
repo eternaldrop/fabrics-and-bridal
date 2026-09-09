@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Fraunces, Inter, Parisienne } from "next/font/google";
-import { Header } from "@/components/layout/header";
-import { Footer } from "@/components/layout/footer";
+import { SiteChrome } from "@/components/layout/site-chrome";
 import { SessionProvider } from "@/components/providers/session-provider";
 import { CartProvider } from "@/lib/cart-context";
 import "./globals.css";
@@ -42,9 +41,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="min-h-full flex flex-col bg-cream text-ink font-sans">
         <SessionProvider>
           <CartProvider>
-            <Header />
-            <main className="flex-1">{children}</main>
-            <Footer />
+            <SiteChrome>{children}</SiteChrome>
           </CartProvider>
         </SessionProvider>
       </body>

@@ -47,7 +47,7 @@ export function HeroCarousel({ slides }: { slides: HeroCarouselSlide[] }) {
           style={{ opacity: i === index ? 1 : 0 }}
           aria-hidden={i !== index}
         >
-          <SlideCollage slide={slide} isPriority={i === 0} />
+          <SlideCollage slide={slide} isPriority={i === 0} active={i === index} />
         </div>
       ))}
 
@@ -55,7 +55,7 @@ export function HeroCarousel({ slides }: { slides: HeroCarouselSlide[] }) {
         type="button"
         onClick={() => goTo(index - 1)}
         aria-label="Previous slide"
-        className="absolute left-4 md:left-6 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full border border-cream/50 text-cream flex items-center justify-center hover:border-cream hover:bg-ink/20 transition-colors"
+        className="absolute left-4 md:left-6 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full border border-cream/50 text-cream flex items-center justify-center hover:border-cream hover:bg-ink/20 hover:scale-110 active:scale-95 transition-[color,background-color,border-color,transform] duration-200"
       >
         <ChevronIcon direction="left" />
       </button>
@@ -63,7 +63,7 @@ export function HeroCarousel({ slides }: { slides: HeroCarouselSlide[] }) {
         type="button"
         onClick={() => goTo(index + 1)}
         aria-label="Next slide"
-        className="absolute right-4 md:right-6 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full border border-cream/50 text-cream flex items-center justify-center hover:border-cream hover:bg-ink/20 transition-colors"
+        className="absolute right-4 md:right-6 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full border border-cream/50 text-cream flex items-center justify-center hover:border-cream hover:bg-ink/20 hover:scale-110 active:scale-95 transition-[color,background-color,border-color,transform] duration-200"
       >
         <ChevronIcon direction="right" />
       </button>
@@ -86,7 +86,15 @@ export function HeroCarousel({ slides }: { slides: HeroCarouselSlide[] }) {
   );
 }
 
-function SlideCollage({ slide, isPriority }: { slide: HeroCarouselSlide; isPriority: boolean }) {
+function SlideCollage({
+  slide,
+  isPriority,
+  active,
+}: {
+  slide: HeroCarouselSlide;
+  isPriority: boolean;
+  active: boolean;
+}) {
   const [primary, second, third] = slide.images;
 
   return (
@@ -133,10 +141,17 @@ function SlideCollage({ slide, isPriority }: { slide: HeroCarouselSlide; isPrior
       <div className="absolute inset-0 bg-gradient-to-t from-ink/85 via-ink/25 to-transparent" />
 
       <Container className="relative h-full flex flex-col justify-end pb-24 md:pb-28">
-        <h2 className="font-script text-6xl md:text-8xl text-cream leading-none">
-          {slide.title}
-        </h2>
-        <p className="mt-4 text-cream/85 max-w-md">{slide.subtext}</p>
+        <div key={active ? "in" : "out"}>
+          <h2 className={`font-script text-6xl md:text-8xl text-cream leading-none ${active ? "reveal is-visible" : "reveal"}`}>
+            {slide.title}
+          </h2>
+          <p
+            className={`mt-4 text-cream/85 max-w-md ${active ? "reveal is-visible" : "reveal"}`}
+            style={active ? { animationDelay: "150ms" } : undefined}
+          >
+            {slide.subtext}
+          </p>
+        </div>
       </Container>
 
       {slide.credits && slide.credits.length > 0 && (

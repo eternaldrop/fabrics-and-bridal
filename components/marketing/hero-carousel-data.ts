@@ -15,16 +15,16 @@ export interface HeroCarouselSlide {
 
 // Swap publicId values for real photography any time — nothing else
 // needs to change. Reuses a few existing catalog fabric photos alongside
-// two photos sourced specifically for this carousel.
+// photos sourced specifically for this carousel.
 export const heroCarouselSlides: HeroCarouselSlide[] = [
   {
     id: "fabrics-and-vibes",
     title: "Fabrics & Vibes",
     subtext: "Lace, silk, velvet — fabric sold by the yard, ready for tailoring.",
     images: [
-      { publicId: "fabrics-and-bridals/seed-photos/ankara-wax-print", alt: "Ankara wax print fabric" },
-      { publicId: "fabrics-and-bridals/seed-photos/silk-charmeuse", alt: "Silk charmeuse fabric" },
-      { publicId: "fabrics-and-bridals/seed-photos/emerald-velvet", alt: "Emerald velvet fabric" },
+      { publicId: "fabrics-and-bridals/site/hero-fabric-rolls", alt: "Rolls of pink satin, ivory lace, and gold linen fabric" },
+      { publicId: "fabrics-and-bridals/site/hero-chiffon-swirl", alt: "Swirled cream chiffon fabric" },
+      { publicId: "fabrics-and-bridals/site/hero-leaf-print-fabric", alt: "Draped fabric with a mauve leaf print" },
     ],
   },
   {
@@ -32,11 +32,10 @@ export const heroCarouselSlides: HeroCarouselSlide[] = [
     title: "Colorful Vibes",
     subtext: "Palettes and inspiration to build your mood board around.",
     images: [
-      { publicId: "fabrics-and-bridals/site/carousel-dahlia", alt: "Pink dahlia flowers" },
+      { publicId: "fabrics-and-bridals/site/hero-colorful-jumpsuit", alt: "A woman in a colourful printed jumpsuit" },
       { publicId: "fabrics-and-bridals/seed-photos/gold-brocade", alt: "Gold brocade fabric" },
       { publicId: "fabrics-and-bridals/seed-photos/kente-cloth", alt: "Kente cloth fabric" },
     ],
-    credits: ["\"Whimsey Dahlia\" by audreyjm529, CC BY 2.0"],
   },
   {
     id: "bridal-catalogues",
@@ -45,7 +44,17 @@ export const heroCarouselSlides: HeroCarouselSlide[] = [
     images: [
       { publicId: "fabrics-and-bridals/bridal-page/hero", alt: "Bride in an embroidered lace gown beside rolls of fabric" },
       { publicId: "fabrics-and-bridals/bridal-page/bridal-gown", alt: "Bride in a champagne satin gown" },
-      { publicId: "fabrics-and-bridals/bridal-page/lace-detail", alt: "Ivory crochet lace detail" },
+      { publicId: "fabrics-and-bridals/site/hero-bridal-consultation", alt: "A bride and her stylist reviewing fabric swatches and a colour palette" },
+    ],
+  },
+  {
+    id: "made-to-measure",
+    title: "Made to Measure",
+    subtext: "Ready-made or cut to your exact measurements — outfits built to fit.",
+    images: [
+      { publicId: "fabrics-and-bridals/site/hero-outfit-black-gown", alt: "A woman in a flowing black gown with a gold headwrap" },
+      { publicId: "fabrics-and-bridals/site/hero-outfit-tan-dress", alt: "A woman in a pleated tan dress" },
+      { publicId: "fabrics-and-bridals/site/hero-outfit-palm-coord", alt: "A couple in matching palm-print co-ord sets" },
     ],
   },
 ];

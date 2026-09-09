@@ -7,6 +7,7 @@ import { cloudinaryUrl } from "@/lib/cloudinary-url";
 import { formatPrice } from "@/lib/format";
 import { Container } from "@/components/ui/container";
 import { Button, LinkButton } from "@/components/ui/button";
+import { Reveal } from "@/components/ui/reveal";
 
 export default function CartPage() {
   const { items, subtotal, updateQuantity, removeItem } = useCart();
@@ -14,25 +15,33 @@ export default function CartPage() {
   if (items.length === 0) {
     return (
       <Container className="py-16 max-w-lg text-center">
-        <h1 className="font-serif text-3xl mb-3">Your cart is empty</h1>
-        <p className="text-taupe mb-8">
-          Browse the catalog and add fabrics or outfits you love.
-        </p>
-        <LinkButton href="/catalog/fabrics" variant="primary">
-          Shop fabrics
-        </LinkButton>
+        <Reveal>
+          <h1 className="font-serif text-3xl mb-3">Your cart is empty</h1>
+          <p className="text-taupe mb-8">
+            Browse the catalog and add fabrics or outfits you love.
+          </p>
+          <LinkButton href="/catalog/fabrics" variant="primary">
+            Shop fabrics
+          </LinkButton>
+        </Reveal>
       </Container>
     );
   }
 
   return (
     <Container className="py-12 md:py-16">
-      <h1 className="font-serif text-3xl md:text-4xl mb-10">Your cart</h1>
+      <Reveal>
+        <h1 className="font-serif text-3xl md:text-4xl mb-10">Your cart</h1>
+      </Reveal>
 
       <div className="grid md:grid-cols-[2fr_1fr] gap-10 md:gap-16">
         <div className="divide-y divide-taupe/20 border-t border-b border-taupe/20">
-          {items.map((item) => (
-            <div key={item.key} className="flex gap-4 py-5">
+          {items.map((item, i) => (
+            <div
+              key={item.key}
+              className="reveal is-visible flex gap-4 py-5"
+              style={{ animationDelay: `${Math.min(i, 6) * 60}ms` }}
+            >
               <div className="relative w-20 h-24 shrink-0 bg-taupe/10 border border-taupe/20">
                 {item.coverImagePublicId && (
                   <Image
@@ -48,7 +57,7 @@ export default function CartPage() {
               <div className="flex-1 min-w-0">
                 <Link
                   href={`/catalog/${item.type === "fabric" ? "fabrics" : "outfits"}/${item.slug}`}
-                  className="font-serif text-lg hover:text-blush"
+                  className="link-underline font-serif text-lg hover:text-blush transition-colors"
                 >
                   {item.name}
                 </Link>
@@ -65,12 +74,12 @@ export default function CartPage() {
                     min={1}
                     value={item.quantity}
                     onChange={(e) => updateQuantity(item.key, Number(e.target.value))}
-                    className="w-16 bg-cream border border-taupe/40 rounded-brand px-2 py-1 text-sm"
+                    className="w-16 bg-cream border border-taupe/40 rounded-brand px-2 py-1 text-sm transition-colors focus:outline-none focus:border-ink"
                   />
                   <button
                     type="button"
                     onClick={() => removeItem(item.key)}
-                    className="text-xs text-blush hover:underline ml-2"
+                    className="text-xs text-blush hover:underline ml-2 transition-transform duration-150 active:scale-90"
                   >
                     Remove
                   </button>
@@ -84,7 +93,7 @@ export default function CartPage() {
           ))}
         </div>
 
-        <div className="border border-taupe/20 rounded-brand p-6 h-fit">
+        <Reveal delay={150} className="border border-taupe/20 rounded-brand p-6 h-fit">
           <div className="flex justify-between text-sm mb-2">
             <span className="text-taupe">Subtotal</span>
             <span className="text-ink">{formatPrice(subtotal)}</span>
@@ -99,7 +108,7 @@ export default function CartPage() {
             Payment isn&apos;t connected yet — checkout arrives in Phase 2.
             Your cart is saved on this device in the meantime.
           </p>
-        </div>
+        </Reveal>
       </div>
     </Container>
   );

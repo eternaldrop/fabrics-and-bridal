@@ -4,6 +4,14 @@ import { moodBoards, moodBoardItems } from "@/db/schema";
 import type { MoodBoardData } from "@/components/bridal/types";
 import type { PaletteSwatch } from "@/components/bridal/mood-board-palette";
 
+// The single curated example linked from the consultation page ("See a
+// real mood board"), so brides know what to expect before they book.
+export async function getFeaturedSampleMoodBoard(): Promise<MoodBoardData | null> {
+  const boards = await getSampleMoodBoards();
+  if (boards.length === 0) return null;
+  return boards.find((b) => b.title === "Blush & Ivory Garden Wedding") ?? boards[0];
+}
+
 export async function getSampleMoodBoards(): Promise<MoodBoardData[]> {
   const boards = await db
     .select()

@@ -23,3 +23,14 @@ export const FABRIC_MATERIALS = [
   "Wool Blend",
   "Other",
 ] as const;
+
+export const OUTFIT_CATEGORIES = [
+  "Casual",
+  "Native Wear",
+  "Business",
+  "Aso-Ebi",
+  "Bridal",
+  "Party",
+] as const;
+
+export const OUTFIT_SIZES = ["UK 8", "UK 10", "UK 12", "UK 14", "UK 16", "Made to measure"] as const;

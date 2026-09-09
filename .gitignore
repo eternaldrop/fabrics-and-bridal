@@ -44,6 +44,9 @@ yarn-error.log*
 # enter git history).
 /images for bridal page/
 /images for fabrics/
+/Fabric images/
+/Hero Images/
+/Outfit images/
 
 # typescript
 *.tsbuildinfo

@@ -23,18 +23,18 @@ export function MoodBoardShowcase({ boards }: { boards: MoodBoardData[] }) {
 
       {openBoard && (
         <div
-          className="fixed inset-0 z-50 bg-ink/80 flex items-start md:items-center justify-center p-4 md:p-8 overflow-y-auto"
+          className="animate-fade-in fixed inset-0 z-50 bg-ink/80 flex items-start md:items-center justify-center p-4 md:p-8 overflow-y-auto"
           onClick={() => setOpenBoard(null)}
         >
           <div
-            className="relative w-full max-w-2xl bg-cream border border-taupe/30 p-6 md:p-10 my-8"
+            className="animate-zoom-in relative w-full max-w-2xl bg-cream border border-taupe/30 p-6 md:p-10 my-8"
             onClick={(e) => e.stopPropagation()}
           >
             <button
               type="button"
               onClick={() => setOpenBoard(null)}
               aria-label="Close"
-              className="absolute top-4 right-4 text-sm text-taupe hover:text-ink border border-taupe/40 rounded-brand px-3 py-1.5"
+              className="absolute top-4 right-4 text-sm text-taupe hover:text-ink border border-taupe/40 rounded-brand px-3 py-1.5 transition-[color,border-color,transform] duration-150 hover:scale-105 active:scale-95"
             >
               Close
             </button>

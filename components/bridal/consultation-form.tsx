@@ -5,34 +5,37 @@ import { useRouter } from "next/navigation";
 import { CldUploadWidget } from "next-cloudinary";
 import Image from "next/image";
 import { Label, Input, Textarea, Select } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import { Button, LinkButton } from "@/components/ui/button";
 import { cloudinaryUrl } from "@/lib/cloudinary-url";
 
 interface FormState {
-  consultationType: "live" | "async" | "";
-  preferredDate: string;
+  guestName: string;
+  guestEmail: string;
   weddingDate: string;
   venueType: string;
-  season: string;
+  weddingTheme: string;
+  preferredColors: string;
   budgetRange: string;
   styleInspiration: string;
-  preferredColors: string;
   inspirationImagePublicIds: string[];
 }
 
 const initialState: FormState = {
-  consultationType: "",
-  preferredDate: "",
+  guestName: "",
+  guestEmail: "",
   weddingDate: "",
   venueType: "",
-  season: "",
+  weddingTheme: "",
+  preferredColors: "",
   budgetRange: "",
   styleInspiration: "",
-  preferredColors: "",
   inspirationImagePublicIds: [],
 };
 
-const TOTAL_STEPS = 6;
+// Question 1 is contact info; questions 2-5 are the "four questions" the
+// bridal page copy refers to.
+const TOTAL_STEPS = 5;
+const MAX_INSPIRATION_PHOTOS = 3;
 
 export function ConsultationForm() {
   const router = useRouter();
@@ -53,7 +56,17 @@ export function ConsultationForm() {
     setStep((s) => Math.max(1, s - 1));
   }
 
-  const canProceedStep1 = form.consultationType !== "";
+  const canProceedStep1 = form.guestName.trim() !== "" && form.guestEmail.trim() !== "";
+  const canProceedStep2 = form.weddingDate.trim() !== "" && form.venueType.trim() !== "";
+  const canProceedStep3 = form.weddingTheme.trim() !== "";
+  const canProceedStep4 = form.preferredColors.trim() !== "" && form.budgetRange !== "";
+
+  const canProceed =
+    (step === 1 && canProceedStep1) ||
+    (step === 2 && canProceedStep2) ||
+    (step === 3 && canProceedStep3) ||
+    (step === 4 && canProceedStep4) ||
+    step === 5;
 
   async function handleSubmit() {
     setError(null);
@@ -78,24 +91,21 @@ export function ConsultationForm() {
 
   if (done) {
     return (
-      <div className="max-w-lg">
-        <h2 className="font-serif text-3xl mb-4">You&apos;re booked in.</h2>
+      <div className="reveal is-visible max-w-lg">
+        <h2 className="font-serif text-3xl mb-4">Thank you!</h2>
         <p className="text-ink/80">
-          We&apos;ve received your consultation request. Your stylist will
-          reach out{" "}
-          {form.consultationType === "live"
-            ? "to confirm your call time"
-            : "with your written consultation"}
-          , and your mood board will appear in your account once it&apos;s
-          ready.
+          We&apos;ve received your consultation request. A stylist will send
+          your first mood board to {form.guestEmail} within about four
+          working days.
         </p>
-        <Button className="mt-8" onClick={() => router.push("/")}>
-          Back to home
-        </Button>
-        <p className="text-xs text-taupe mt-3">
-          Order history and booking status in your account are coming in a
-          later phase — for now, your stylist will reach you by email.
-        </p>
+        <div className="flex flex-wrap gap-4 mt-8">
+          <LinkButton href="/bridal/sample-mood-board" variant="primary">
+            View a sample mood board
+          </LinkButton>
+          <Button variant="ghost" onClick={() => router.push("/")}>
+            Back to home
+          </Button>
+        </div>
       </div>
     );
   }
@@ -104,70 +114,49 @@ export function ConsultationForm() {
 
   return (
     <div className="max-w-lg">
-      {/* Progress dots — not numbered steps per the design brief, since this
-          is a genuine step sequence it's the one place numbers would be
-          fine, but dots read calmer for a "guided conversation" feel. */}
+      {/* Progress bar — dots read calmer than numbered steps for a
+          "guided conversation" feel, but still show where she is. */}
       <div className="flex items-center gap-2 mb-10">
         {Array.from({ length: TOTAL_STEPS }, (_, i) => i + 1).map((s) => (
           <div
             key={s}
-            className={`h-1.5 flex-1 rounded-full ${s <= step ? "bg-rose" : "bg-taupe/20"}`}
+            className={`h-1.5 flex-1 rounded-full transition-colors duration-300 ${s <= step ? "bg-rose" : "bg-taupe/20"}`}
           />
         ))}
       </div>
 
       {step === 1 && (
-        <div>
-          <h2 className="font-serif text-2xl md:text-3xl mb-2">
-            How would you like your consultation?
-          </h2>
-          <p className="text-taupe mb-6">Both options lead to the same personal mood board.</p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <button
-              type="button"
-              onClick={() => update("consultationType", "live")}
-              className={`text-left border rounded-brand p-5 transition-colors ${
-                form.consultationType === "live" ? "border-ink bg-rose/10" : "border-taupe/30 hover:border-ink"
-              }`}
-            >
-              <p className="font-serif text-lg">Live consultation</p>
-              <p className="text-sm text-taupe mt-1">
-                A scheduled call with a stylist to talk through your wedding.
-              </p>
-            </button>
-            <button
-              type="button"
-              onClick={() => update("consultationType", "async")}
-              className={`text-left border rounded-brand p-5 transition-colors ${
-                form.consultationType === "async" ? "border-ink bg-rose/10" : "border-taupe/30 hover:border-ink"
-              }`}
-            >
-              <p className="font-serif text-lg">Written consultation</p>
-              <p className="text-sm text-taupe mt-1">
-                Answer a few questions here and get your mood board without a call.
-              </p>
-            </button>
-          </div>
-          {form.consultationType === "live" && (
-            <div className="mt-6">
-              <Label htmlFor="preferredDate">Preferred date/time for your call</Label>
+        <div className="reveal is-visible">
+          <h2 className="font-serif text-2xl md:text-3xl mb-2">How can we reach you?</h2>
+          <p className="text-taupe mb-6">
+            No account needed — your stylist will follow up directly.
+          </p>
+          <div className="space-y-5">
+            <div>
+              <Label htmlFor="guestName">Name</Label>
               <Input
-                id="preferredDate"
-                type="datetime-local"
-                value={form.preferredDate}
-                onChange={(e) => update("preferredDate", e.target.value)}
+                id="guestName"
+                value={form.guestName}
+                onChange={(e) => update("guestName", e.target.value)}
+                required
               />
-              <p className="text-xs text-taupe mt-2">
-                Calendar scheduling is coming soon — for now your stylist will
-                confirm a time close to this by email.
-              </p>
             </div>
-          )}
+            <div>
+              <Label htmlFor="guestEmail">Email</Label>
+              <Input
+                id="guestEmail"
+                type="email"
+                value={form.guestEmail}
+                onChange={(e) => update("guestEmail", e.target.value)}
+                required
+              />
+            </div>
+          </div>
         </div>
       )}
 
       {step === 2 && (
-        <div>
+        <div className="reveal is-visible">
           <h2 className="font-serif text-2xl md:text-3xl mb-6">When and where?</h2>
           <div className="space-y-5">
             <div>
@@ -177,11 +166,17 @@ export function ConsultationForm() {
                 type="date"
                 value={form.weddingDate}
                 onChange={(e) => update("weddingDate", e.target.value)}
+                required
               />
             </div>
             <div>
               <Label htmlFor="venueType">Venue type</Label>
-              <Select id="venueType" value={form.venueType} onChange={(e) => update("venueType", e.target.value)}>
+              <Select
+                id="venueType"
+                value={form.venueType}
+                onChange={(e) => update("venueType", e.target.value)}
+                required
+              >
                 <option value="">Select one</option>
                 <option value="Indoor hall">Indoor hall</option>
                 <option value="Outdoor garden">Outdoor garden</option>
@@ -191,124 +186,146 @@ export function ConsultationForm() {
                 <option value="Other">Other</option>
               </Select>
             </div>
+          </div>
+        </div>
+      )}
+
+      {step === 3 && (
+        <div className="reveal is-visible">
+          <h2 className="font-serif text-2xl md:text-3xl mb-2">What&apos;s your wedding theme?</h2>
+          <p className="text-taupe mb-6">
+            Describe it in your own words — romantic, modern, traditional,
+            glamorous, whatever fits.
+          </p>
+          <Input
+            id="weddingTheme"
+            placeholder="e.g. Romantic garden, modern minimalist, traditional aso-ebi"
+            value={form.weddingTheme}
+            onChange={(e) => update("weddingTheme", e.target.value)}
+            required
+          />
+        </div>
+      )}
+
+      {step === 4 && (
+        <div className="reveal is-visible">
+          <h2 className="font-serif text-2xl md:text-3xl mb-6">Colours and budget</h2>
+          <div className="space-y-5">
             <div>
-              <Label htmlFor="season">Season</Label>
-              <Select id="season" value={form.season} onChange={(e) => update("season", e.target.value)}>
+              <Label htmlFor="preferredColors">Favourite colours</Label>
+              <Input
+                id="preferredColors"
+                placeholder="e.g. blush, ivory, sage green"
+                value={form.preferredColors}
+                onChange={(e) => update("preferredColors", e.target.value)}
+                required
+              />
+            </div>
+            <div>
+              <Label htmlFor="budgetRange">Fabric / outfit budget</Label>
+              <Select
+                id="budgetRange"
+                value={form.budgetRange}
+                onChange={(e) => update("budgetRange", e.target.value)}
+                required
+              >
                 <option value="">Select one</option>
-                <option value="Dry season">Dry season</option>
-                <option value="Rainy season">Rainy season</option>
-                <option value="Harmattan">Harmattan</option>
+                <option value="Under ₦200,000">Under ₦200,000</option>
+                <option value="₦200,000 – ₦500,000">₦200,000 – ₦500,000</option>
+                <option value="₦500,000 – ₦1,000,000">₦500,000 – ₦1,000,000</option>
+                <option value="Over ₦1,000,000">Over ₦1,000,000</option>
+                <option value="Not sure yet">Not sure yet</option>
               </Select>
             </div>
           </div>
         </div>
       )}
 
-      {step === 3 && (
-        <div>
-          <h2 className="font-serif text-2xl md:text-3xl mb-6">Tell us about your style</h2>
-          <div className="space-y-5">
-            <div>
-              <Label htmlFor="preferredColors">Preferred colors</Label>
-              <Input
-                id="preferredColors"
-                placeholder="e.g. blush, ivory, sage green"
-                value={form.preferredColors}
-                onChange={(e) => update("preferredColors", e.target.value)}
-              />
-            </div>
-            <div>
-              <Label htmlFor="styleInspiration">Style inspiration</Label>
-              <Textarea
-                id="styleInspiration"
-                rows={5}
-                placeholder="Tell us about the feeling you want — romantic, modern, traditional, glamorous..."
-                value={form.styleInspiration}
-                onChange={(e) => update("styleInspiration", e.target.value)}
-              />
-            </div>
-          </div>
-        </div>
-      )}
-
-      {step === 4 && (
-        <div>
-          <h2 className="font-serif text-2xl md:text-3xl mb-6">What&apos;s your budget range?</h2>
-          <Select id="budgetRange" value={form.budgetRange} onChange={(e) => update("budgetRange", e.target.value)}>
-            <option value="">Select one</option>
-            <option value="Under ₦200,000">Under ₦200,000</option>
-            <option value="₦200,000 – ₦500,000">₦200,000 – ₦500,000</option>
-            <option value="₦500,000 – ₦1,000,000">₦500,000 – ₦1,000,000</option>
-            <option value="Over ₦1,000,000">Over ₦1,000,000</option>
-            <option value="Not sure yet">Not sure yet</option>
-          </Select>
-        </div>
-      )}
-
       {step === 5 && (
-        <div>
-          <h2 className="font-serif text-2xl md:text-3xl mb-2">Any inspiration photos?</h2>
-          <p className="text-taupe mb-6">Optional — skip this if you don&apos;t have any yet.</p>
-          {uploadPreset ? (
-            <CldUploadWidget
-              uploadPreset={uploadPreset}
-              options={{ multiple: true, maxFiles: 6 }}
-              onSuccess={(result) => {
-                const info = result.info;
-                if (info && typeof info === "object" && "public_id" in info) {
-                  update("inspirationImagePublicIds", [
-                    ...form.inspirationImagePublicIds,
-                    (info as { public_id: string }).public_id,
-                  ]);
-                }
-              }}
-            >
-              {({ open }) => (
-                <Button type="button" variant="ghost" onClick={() => open()}>
-                  Upload photos
-                </Button>
-              )}
-            </CldUploadWidget>
-          ) : (
-            <p className="text-sm text-taupe">
-              Photo upload isn&apos;t configured yet — you can skip this step.
-            </p>
-          )}
+        <div className="reveal is-visible">
+          <h2 className="font-serif text-2xl md:text-3xl mb-2">Extra notes or inspiration</h2>
+          <p className="text-taupe mb-6">
+            Optional — share anything else that would help your stylist, or
+            skip straight to booking.
+          </p>
+          <Textarea
+            id="styleInspiration"
+            rows={4}
+            placeholder="Tell us about the feeling you want, or anything else worth knowing..."
+            value={form.styleInspiration}
+            onChange={(e) => update("styleInspiration", e.target.value)}
+          />
 
-          {form.inspirationImagePublicIds.length > 0 && (
-            <div className="flex gap-3 mt-4 flex-wrap">
-              {form.inspirationImagePublicIds.map((publicId) => (
-                <div key={publicId} className="relative w-20 h-24 border border-taupe/30">
-                  <Image
-                    src={cloudinaryUrl(publicId, { width: 160 })}
-                    alt="Inspiration upload"
-                    fill
-                    sizes="80px"
-                    className="object-cover"
-                  />
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-
-      {step === 6 && (
-        <div>
-          <h2 className="font-serif text-2xl md:text-3xl mb-6">Review your consultation</h2>
-          <dl className="space-y-3 text-sm border-t border-taupe/20 pt-6">
-            <Row label="Type" value={form.consultationType === "live" ? "Live consultation" : "Written consultation"} />
-            {form.weddingDate && <Row label="Wedding date" value={form.weddingDate} />}
-            {form.venueType && <Row label="Venue" value={form.venueType} />}
-            {form.season && <Row label="Season" value={form.season} />}
-            {form.preferredColors && <Row label="Colors" value={form.preferredColors} />}
-            {form.styleInspiration && <Row label="Inspiration" value={form.styleInspiration} />}
-            {form.budgetRange && <Row label="Budget" value={form.budgetRange} />}
-            {form.inspirationImagePublicIds.length > 0 && (
-              <Row label="Photos" value={`${form.inspirationImagePublicIds.length} uploaded`} />
+          <div className="mt-5">
+            {uploadPreset ? (
+              form.inspirationImagePublicIds.length >= MAX_INSPIRATION_PHOTOS ? (
+                <p className="text-sm text-taupe">
+                  Maximum of {MAX_INSPIRATION_PHOTOS} photos reached — remove one below to swap it out.
+                </p>
+              ) : (
+                <>
+                  <CldUploadWidget
+                    uploadPreset={uploadPreset}
+                    options={{
+                      multiple: true,
+                      maxFiles: MAX_INSPIRATION_PHOTOS - form.inspirationImagePublicIds.length,
+                    }}
+                    onSuccess={(result) => {
+                      const info = result.info;
+                      if (info && typeof info === "object" && "public_id" in info) {
+                        update("inspirationImagePublicIds", [
+                          ...form.inspirationImagePublicIds,
+                          (info as { public_id: string }).public_id,
+                        ].slice(0, MAX_INSPIRATION_PHOTOS));
+                      }
+                    }}
+                  >
+                    {({ open }) => (
+                      <Button type="button" variant="ghost" onClick={() => open()}>
+                        Upload inspiration photos
+                      </Button>
+                    )}
+                  </CldUploadWidget>
+                  <p className="text-xs text-taupe mt-2">Up to {MAX_INSPIRATION_PHOTOS} photos.</p>
+                </>
+              )
+            ) : (
+              <p className="text-sm text-taupe">
+                Photo upload isn&apos;t configured yet — you can skip this.
+              </p>
             )}
-          </dl>
-          {error && <p className="text-sm text-blush mt-4">{error}</p>}
+
+            {form.inspirationImagePublicIds.length > 0 && (
+              <div className="flex gap-3 mt-4 flex-wrap">
+                {form.inspirationImagePublicIds.map((publicId) => (
+                  <div key={publicId} className="relative w-20 h-24 border border-taupe/30">
+                    <Image
+                      src={cloudinaryUrl(publicId, { width: 160 })}
+                      alt="Inspiration upload"
+                      fill
+                      sizes="80px"
+                      className="object-cover"
+                    />
+                    <button
+                      type="button"
+                      onClick={() =>
+                        update(
+                          "inspirationImagePublicIds",
+                          form.inspirationImagePublicIds.filter((id) => id !== publicId)
+                        )
+                      }
+                      className="absolute top-1 right-1 bg-ink/80 text-cream text-xs rounded-full w-5 h-5 flex items-center justify-center leading-none transition-transform duration-150 hover:scale-110 active:scale-90"
+                      aria-label="Remove photo"
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {error && <p key={error} className="animate-shake text-sm text-blush mt-4">{error}</p>}
         </div>
       )}
 
@@ -322,7 +339,7 @@ export function ConsultationForm() {
         )}
 
         {step < TOTAL_STEPS ? (
-          <Button onClick={next} disabled={step === 1 && !canProceedStep1}>
+          <Button onClick={next} disabled={!canProceed}>
             Continue
           </Button>
         ) : (
@@ -331,15 +348,6 @@ export function ConsultationForm() {
           </Button>
         )}
       </div>
-    </div>
-  );
-}
-
-function Row({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex gap-4">
-      <dt className="text-taupe w-24 shrink-0">{label}</dt>
-      <dd className="text-ink">{value}</dd>
     </div>
   );
 }

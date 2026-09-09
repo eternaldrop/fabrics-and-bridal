@@ -28,21 +28,25 @@ export function ProductList({ items }: { items: AdminProductRow[] }) {
   }
 
   if (items.length === 0) {
-    return <p className="text-taupe">No catalog items yet — add one above.</p>;
+    return (
+      <div className="border border-dashed border-taupe/40 rounded-brand p-8 text-center">
+        <p className="text-taupe">No catalog items yet — add one above.</p>
+      </div>
+    );
   }
 
   return (
-    <div className="divide-y divide-taupe/20 border-t border-b border-taupe/20">
+    <div className="border border-taupe/20 rounded-brand divide-y divide-taupe/20 overflow-hidden">
       {items.map((item) => (
-        <div key={item.id} className="flex flex-wrap items-center gap-x-4 gap-y-2 py-4">
-          <div className="relative w-14 h-16 bg-taupe/10 border border-taupe/20 shrink-0">
+        <div key={item.id} className="group flex flex-wrap items-center gap-x-4 gap-y-2 py-4 px-4 transition-colors duration-150 hover:bg-taupe/5">
+          <div className="relative w-14 h-16 bg-taupe/10 border border-taupe/20 shrink-0 overflow-hidden">
             {item.coverImagePublicId && (
               <Image
                 src={cloudinaryUrl(item.coverImagePublicId, { width: 120 })}
                 alt={item.name}
                 fill
                 sizes="56px"
-                className="object-cover"
+                className="object-cover transition-transform duration-200 group-hover:scale-105"
               />
             )}
           </div>
@@ -61,7 +65,7 @@ export function ProductList({ items }: { items: AdminProductRow[] }) {
             type="button"
             onClick={() => handleDelete(item.id)}
             disabled={deletingId === item.id}
-            className="text-sm text-blush hover:underline disabled:opacity-50"
+            className="text-sm text-blush hover:underline transition-transform duration-150 active:scale-90 disabled:opacity-50 disabled:active:scale-100"
           >
             {deletingId === item.id ? "Removing..." : "Remove"}
           </button>

@@ -16,7 +16,7 @@ const variantClasses: Record<Variant, string> = {
 };
 
 const base =
-  "inline-flex items-center justify-center px-6 py-3 text-sm font-medium rounded-brand transition-colors duration-150 disabled:opacity-50 disabled:pointer-events-none";
+  "inline-flex items-center justify-center px-6 py-3 text-sm font-medium rounded-brand transition-[color,background-color,border-color,transform] duration-150 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.97] disabled:opacity-50 disabled:pointer-events-none disabled:hover:translate-y-0";
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: Variant;

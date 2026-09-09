@@ -35,9 +35,9 @@ export const orderStatusEnum = pgEnum("order_status", [
 
 export const consultationStatusEnum = pgEnum("consultation_status", [
   "requested",
-  "scheduled",
-  "completed",
-  "cancelled",
+  "responded",
+  "ongoing",
+  "finished",
 ]);
 
 // Live call (calendar scheduling, later integration) vs. async written consultation.
@@ -73,6 +73,8 @@ export const products = pgTable("products", {
   material: text("material"), // fabric type, e.g. lace, ankara, silk
   color: text("color"),
   occasion: text("occasion"),
+  width: text("width"), // fabric-specific, e.g. "58 inches"
+  careInstructions: text("care_instructions"), // fabric-specific
   price: numeric("price", { precision: 10, scale: 2 }).notNull(),
   isCustomOrderable: boolean("is_custom_orderable").notNull().default(false),
   stockQuantity: integer("stock_quantity"), // nullable for made-to-order
@@ -135,14 +137,17 @@ export const orderItems = pgTable("order_items", {
 
 export const bridalConsultations = pgTable("bridal_consultations", {
   id: uuid("id").primaryKey().defaultRandom(),
-  userId: uuid("user_id")
-    .notNull()
-    .references(() => users.id),
+  // Customers never have accounts — every consultation is booked as a
+  // guest, so contact details are captured directly on the request.
+  guestName: text("guest_name").notNull(),
+  guestEmail: text("guest_email").notNull(),
+  guestPhone: text("guest_phone"),
   consultationType: consultationTypeEnum("consultation_type").notNull(),
   preferredDate: timestamp("preferred_date"), // for live consultations
   status: consultationStatusEnum("status").notNull().default("requested"),
   weddingDate: date("wedding_date"),
   venueType: text("venue_type"),
+  weddingTheme: text("wedding_theme"),
   season: text("season"),
   budgetRange: text("budget_range"),
   styleInspiration: text("style_inspiration"),
